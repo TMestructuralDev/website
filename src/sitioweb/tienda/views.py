@@ -1,6 +1,7 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Producto, Categoria
 from home.utils import obtener_productos_destacados
+from .cart import Carrito
 
 #from django.http import HttpResponse
 
@@ -38,3 +39,19 @@ def listado_productos(request):
     }
 
     return render(request, 'tienda/listado_productos.html', context)
+
+def agregar_al_carrito(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
+    carrito = Carrito(request)
+    carrito.agregar(producto)
+    return redirect('ver_carrito')
+
+def eliminar_del_carrito(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
+    carrito = Carrito(request)
+    carrito.eliminar(producto)
+    return redirect('ver_carrito')
+
+def ver_carrito(request):
+    carrito = Carrito(request)
+    return render(request, 'tienda/carrito.html', {'carrito': carrito})
