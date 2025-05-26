@@ -1,0 +1,38 @@
+{% extends "home/base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<link href="{% static 'mdb/css/mdb.min.css' %}" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<!--<link href="{% static 'bootstrap-5.3.5-dist/css/bootstrap.min.css' %}" rel="stylesheet"> -->
+<link href="{% static 'home/style.css' %}" rel="stylesheet">
+
+
+
+<div class="home-content">
+    <h1 style="color: rgb(94, 154, 245);">Plantilla de la Tienda.</h1>
+</div>
+
+
+
+<script src="{% static 'mdb/js/mdb.umd.min.js' %}"></script>
+<!--<script src="{% static 'bootstrap-5.3.5-dist/js/popper.min.js' %}"></script> -->
+<!--<script src="{% static 'bootstrap-5.3.5-dist/js/bootstrap.min.js' %}"></script> -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar ambos carruseles
+        const novedadesCarousel = new mdb.Carousel(document.getElementById('novedades'));
+        const vendidosCarousel = new mdb.Carousel(document.getElementById('mas-vendidos'));
+        
+        // Opcional: Configuración adicional
+        [novedadesCarousel, vendidosCarousel].forEach(carousel => {
+            carousel.update();
+            carousel.cycle();
+        });
+    });
+</script>
+
+
+{% endblock content %}

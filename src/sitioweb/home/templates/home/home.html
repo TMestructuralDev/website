@@ -1,0 +1,171 @@
+
+{% extends "home/base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<link href="{% static 'mdb/css/mdb.min.css' %}" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<!--<link href="{% static 'bootstrap-5.3.5-dist/css/bootstrap.min.css' %}" rel="stylesheet"> -->
+<link href="{% static 'home/style.css' %}" rel="stylesheet">
+
+<div class="container-fluid mt-4">
+
+    <div style="padding: 20px;" >
+        <h1 style="color: whitesmoke; padding-left: 10px; background: linear-gradient(to right, #ff9900, #ff6600);">OFERTAS!</h1>
+    </div>
+
+    <div id="ofertas" class="carousel slide" data-mdb-ride="carousel" style= "padding-top: 20px; margin-bottom: 20px; height: 100%; overflow: hidden;">
+        <div class="carousel-inner">
+
+            {% for producto in productos_ofertas %}
+                {% if forloop.counter0|divisibleby:3 %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}" style="overflow: visible">
+                        <div class="d-flex justify-content-center" style="overflow: visible">
+                {% endif %}
+
+                <div class="card mx-2">
+                    <a href="{% url 'producto_detalle' slug=producto.slug %}#seccion-detalle" class="image-container">
+                        <img src="{{ producto.imagen.url }}" class="card-img-top" alt="{{ producto.nombre }}">
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ producto.nombre }}</h5>
+                        <p class="card-text">Ofertas!</p>
+                    </div>
+                    <div class="mt-auto">
+                        <a href="#" class="btn btn-primary w-100">Comprar</a>
+                    </div>
+                </div>
+
+                {% if forloop.counter|divisibleby:3 or forloop.last %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+        </div>
+
+        <!-- Controles del carrusel -->
+        <button class="carousel-control-prev" type="button" data-mdb-target="#ofertas" data-mdb-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        </button>
+        
+        <button class="carousel-control-next" type="button" data-mdb-target="#ofertas" data-mdb-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        </button>
+        
+    </div>
+
+    <div style="padding: 50px;" >
+        <h1 style="color: whitesmoke; padding-left: 10px; background: linear-gradient(to right, #ff9900, #ff6600);">NOVEDADES</h1>
+    </div>
+
+    <div id="novedades" class="carousel slide" data-mdb-ride="carousel" style= "padding-top: 20px; margin-bottom: 20px; height: 100%; overflow: hidden;">
+        <div class="carousel-inner">
+
+            {% for producto in productos_novedades %}
+                {% if forloop.counter0|divisibleby:3 %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="d-flex justify-content-center">
+                {% endif %}
+
+                <div class="card mx-2" style="width: 18rem;">
+                    <a href="{% url 'producto_detalle' slug=producto.slug %}#seccion-detalle" style="display: block; height: 250px; overflow: hidden;">
+                        <img src="{{ producto.imagen.url }}" class="card-img-top" alt="{{ producto.nombre }}">
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ producto.nombre }}</h5>
+                        <p class="card-text">Producto Nuevo!</p>
+                    </div>
+                    <div class="mt-auto">
+                        <a href="#" class="btn btn-primary w-100">Comprar</a>
+                    </div>
+                </div>
+
+                {% if forloop.counter|divisibleby:3 or forloop.last %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+        </div>
+                
+        <!-- Controles del carrusel -->
+        <button class="carousel-control-prev" type="button" data-mdb-target="#novedades" data-mdb-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        </button>
+        
+        <button class="carousel-control-next" type="button" data-mdb-target="#novedades" data-mdb-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        </button>
+        
+    </div>
+
+
+
+    <div style="padding: 50px;">
+        <h1 style="color: whitesmoke; padding-left: 10px; background: linear-gradient(to right, #ff9900, #ff6600);">MAS VENDIDOS</h1>
+    </div>
+
+    <div id="mas-vendidos" class="carousel slide" data-mdb-ride="carousel" style= "padding-top: 20px; margin-bottom: 20px; height: 100%; overflow: hidden;">
+        <div class="carousel-inner">
+
+            {% for producto in productos_mas_vendidos %}
+                {% if forloop.counter0|divisibleby:3 %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="d-flex justify-content-center">
+                {% endif %}
+
+                <div class="card mx-2" style="width: 18rem;">
+                    <a href="{% url 'producto_detalle' slug=producto.slug %}#seccion-detalle" class="image-container">
+                        <img src="{{ producto.imagen.url }}" class="card-img-top" alt="{{ producto.nombre }}">
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ producto.nombre }}</h5>
+                        <p class="card-text">De los mas vendidos!</p>
+                    </div>
+                    <div class="mt-auto">
+                        <a href="#" class="btn btn-primary w-100">Comprar</a>
+                    </div>
+                </div>
+
+                {% if forloop.counter|divisibleby:3 or forloop.last %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+        </div>
+
+        <!-- Controles del carrusel -->
+        <button class="carousel-control-prev" type="button" data-mdb-target="#mas-vendidos" data-mdb-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        </button>
+        
+        <button class="carousel-control-next" type="button" data-mdb-target="#mas-vendidos" data-mdb-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        </button>
+        
+    </div>
+
+</div>
+
+<!--<script src="{% static 'mdb/js/mdb.umd.min.js' %}"></script> -->
+<!--<script src="{% static 'bootstrap-5.3.5-dist/js/popper.min.js' %}"></script> -->
+<!--<script src="{% static 'bootstrap-5.3.5-dist/js/bootstrap.min.js' %}"></script> -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar ambos carruseles
+        const novedadesCarousel = new mdb.Carousel(document.getElementById('novedades'));
+        const vendidosCarousel = new mdb.Carousel(document.getElementById('mas-vendidos'));
+        const ofertasCarousel = new mdb.Carousel(document.getElementById('ofertas'));
+        
+        // Opcional: Configuración adicional
+        [novedadesCarousel, vendidosCarousel, ofertasCarousel,].forEach(carousel => {
+            carousel.cycle();
+        });
+    });
+</script>
+
+{% endblock content %}

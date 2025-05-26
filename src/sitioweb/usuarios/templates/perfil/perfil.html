@@ -1,0 +1,79 @@
+{% extends "home/base.html" %}
+{% load static %}
+
+{% block content %}
+<link href="{% static 'mdb/css/mdb.min.css' %}" rel="stylesheet" />
+
+<div class="container my-5">
+    <div class="row">
+        
+        <!-- Menú lateral -->
+        <div class="col-md-3">
+            <div class="list-group">
+                <a href="#datos" class="list-group-item list-group-item-action active" data-mdb-toggle="list">Mis Datos</a>
+                <a href="#cambiar-password" class="list-group-item list-group-item-action" data-mdb-toggle="list">Cambiar Contraseña</a>
+                <a href="#pedidos" class="list-group-item list-group-item-action" data-mdb-toggle="list">Mis Pedidos</a>
+                <a href="#seguimiento" class="list-group-item list-group-item-action" data-mdb-toggle="list">Seguimiento</a>
+                <a href="#carrito" class="list-group-item list-group-item-action" data-mdb-toggle="list">Carrito de Compras</a>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="col-md-9">
+            <div class="tab-content">
+                
+                <!-- Mis datos -->
+                <div class="tab-pane fade show active" id="datos">
+                    <h3>Mis Datos</h3>
+                    <p>Nombre: {{ user.first_name }}</p>
+                    <p>Apellido: {{ user.last_name }}</p>
+                    <p>Email: {{ user.email }}</p>
+                    <a href="#" class="btn btn-warning">Editar Datos</a>
+                </div>
+
+                <!-- Cambiar contraseña -->
+                <div class="tab-pane fade" id="cambiar-password">
+                    <h3>Cambiar Contraseña</h3>
+                    <a href="{% url 'password_change' %}" class="btn btn-primary">Ir a cambiar contraseña</a>
+                </div>
+
+                <!-- Mis pedidos -->
+                <div class="tab-pane fade" id="pedidos">
+                    <h3>Mis Pedidos</h3>
+                    <p>Aquí verás todos tus pedidos.</p>
+                    <!-- Aquí luego mostraremos una tabla de pedidos -->
+                </div>
+
+                <!-- Seguimiento de pedidos -->
+                <div class="tab-pane fade" id="seguimiento">
+                    <h3>Seguimiento</h3>
+                    <p>Consulta el estado de tus pedidos activos.</p>
+                    <!-- Tabla de seguimiento -->
+                </div>
+
+                <!-- Carrito de compras -->
+                <div class="tab-pane fade" id="carrito">
+                    <h3>Carrito</h3>
+                    <p>Tu carrito actual.</p>
+                    <!-- Lista de productos del carrito -->
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Necesario para el efecto de tabs si no usas inicialización automática
+    document.addEventListener('DOMContentLoaded', function() {
+        const listGroup = document.querySelectorAll('.list-group-item');
+        listGroup.forEach(item => {
+            item.addEventListener('click', function() {
+                listGroup.forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    });
+</script>
+{% endblock %}

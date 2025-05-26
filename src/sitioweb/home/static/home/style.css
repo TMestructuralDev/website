@@ -1,0 +1,149 @@
+html {
+    scroll-behavior: smooth; /* Transición suave al hacer scroll */
+}
+
+
+body {
+    background: rgba(129, 127, 127, 0.418);
+    background-size: cover;  
+    background-position: center center;
+    position: relative;
+}
+
+.video-background-container {
+    position: relative;
+    height: 500px; /* igual que el original */
+    overflow: hidden;
+}
+
+.video-background {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -1;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+}
+
+.home-content {
+    height: max-content;  /* Ajusta este valor según tus necesidades */
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  color: #ff6600; /* Color naranja */
+  transform: scale(2); /* 2x más grande (ajusta el valor) */
+  transition: transform 0.2s; /* Efecto suave opcional */
+}
+
+.carousel-inner {
+    height: max-content;
+    overflow: visible;
+}
+
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    padding: 10px;
+    height: 100%;
+    width: 16rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-img-top {
+    transition: transform 0.3s ease;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.image-container {
+    height: 250px;
+    display: block;
+    overflow: hidden;
+    border-top-left-radius: 0.75rem; 
+    border-top-right-radius: 0.75rem;
+}
+
+.card a.btn {
+    margin-top: auto; /* Botón siempre abajo */
+    background-color: #ff6600; /* Fondo naranja */
+    color: white; /* Texto blanco */
+    border: none;
+}
+
+
+.card-body button.btn {
+    background-color: #ff6600; 
+    color: white; 
+    border: none;
+}
+
+
+.card-lista {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    padding: 10px;
+    height: 26rem;
+    width: 14rem;
+}
+
+.card-lista .card-body-lista {
+    flex-grow: 1; /* Hace que el contenido crezca y el botón se quede abajo */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-lista .card-title-lista {
+    max-height: 200px;
+}
+
+.card-lista .card-text-lista {
+    max-height: 400px;
+}
+
+.card-lista a.btn {
+    margin-top: auto; /* Botón siempre abajo */
+    background-color: #ff6600; /* Fondo naranja */
+    color: white; /* Texto blanco */
+    border: none;
+}
+
+
+.card-lista:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-img-top-lista {
+    transition: transform 0.3s ease;
+    max-width: 100%;
+    height: 200px;
+    object-fit: contain;
+}
+
+
+
+
