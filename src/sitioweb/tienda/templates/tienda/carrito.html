@@ -5,8 +5,7 @@
     <h4 class="mb-4">Carrito de Compras</h4>
 
     {% if carrito.carrito %}
-        <div class="row">
-            {% for item in carrito %}
+        {% for item in carrito.carrito.values %}
             <div class="col-md-4 mb-3">
                 <div class="card">
                     <img src="{{ item.imagen }}" class="card-img-top" style="height: 200px; object-fit: contain;">
@@ -15,14 +14,11 @@
                         <p class="card-text">Precio: ${{ item.precio }}</p>
                         <p class="card-text">Cantidad: {{ item.cantidad }}</p>
                         <p class="card-text">Subtotal: ${{ item.subtotal|floatformat:2 }}</p>
-                        <a href="{% url 'eliminar_del_carrito' item.slug %}" class="btn btn-danger btn-sm">Eliminar</a>
+                        {#<a href="{% url 'eliminar_del_carrito' item.id %}" class="btn btn-danger btn-sm">Eliminar</a>#}
                     </div>
                 </div>
             </div>
-            {% endfor %}
-        </div>
-        <h5 class="mt-4">Total: ${{ carrito.total|floatformat:2 }}</h5>
-        <a href="{% url 'crear_pago' %}" class="btn btn-primary mt-3">Proceder al Pago</a>
+        {% endfor %}
     {% else %}
         <p>No hay productos en el carrito.</p>
     {% endif %}

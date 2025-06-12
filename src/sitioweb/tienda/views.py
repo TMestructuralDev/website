@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from .models import Producto, Categoria
 from home.utils import obtener_productos_destacados
 from .cart import Carrito
+
 
 #from django.http import HttpResponse
 
@@ -54,4 +56,6 @@ def eliminar_del_carrito(request, producto_id):
 
 def ver_carrito(request):
     carrito = Carrito(request)
+    for key, item in carrito.carrito.items():
+        print(f"ID en carrito: {item.get('id')} tipo: {type(item.get('id'))}")
     return render(request, 'tienda/carrito.html', {'carrito': carrito})
