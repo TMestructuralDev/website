@@ -1,26 +1,91 @@
-
 {% extends 'home/base.html' %}
 {% block content %}
 <div class="container mt-4">
     <h4 class="mb-4">Carrito de Compras</h4>
 
     {% if carrito.carrito %}
-        {% for item in carrito.carrito.values %}
-            <div class="col-md-4 mb-3">
-                <div class="card">
-                    <img src="{{ item.imagen }}" class="card-img-top" style="height: 200px; object-fit: contain;">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ item.nombre }}</h5>
-                        <p class="card-text">Precio: ${{ item.precio }}</p>
-                        <p class="card-text">Cantidad: {{ item.cantidad }}</p>
-                        <p class="card-text">Subtotal: ${{ item.subtotal|floatformat:2 }}</p>
-                        {#<a href="{% url 'eliminar_del_carrito' item.id %}" class="btn btn-danger btn-sm">Eliminar</a>#}
+        <div class="row">
+            {% for item in carrito %}
+                <div class="col-md-4 mb-3" id="producto-{{ item.producto_id }}">
+                    <div class="card">
+                        <img src="{{ item.imagen }}" class="card-img-top" style="height: 200px; object-fit: contain;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ item.nombre }}</h5>
+                            <p class="card-text">Precio: ${{ item.precio }}</p>
+
+                            <div class="input-group mb-3">
+                                <button class="btn btn-outline-secondary btn-decrease" type="button" data-id="{{ forloop.counter0 }}">-</button>
+                                <input type="number" class="form-control text-center cantidad-input" value="{{ item.cantidad }}" min="0" data-id="{{ forloop.counter0 }}" readonly>
+                                <button class="btn btn-outline-secondary btn-increase" type="button" data-id="{{ forloop.counter0 }}">+</button>
+                            </div>
+                            <p class="card-text">Subtotal: $<span class="subtotal" id="subtotal-{{ forloop.counter0 }}">{{ item.subtotal|floatformat:2 }}</span></p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
+        <hr>
+        <span id="total-carrito">{{ carrito.total|floatformat:2 }}</span>
     {% else %}
         <p>No hay productos en el carrito.</p>
     {% endif %}
 </div>
+
+<!-- Necesitamos el token CSRF para AJAX -->
+<form id="csrf-form">{% csrf_token %}</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const increaseButtons = document.querySelectorAll('.btn-increase');
+        const decreaseButtons = document.querySelectorAll('.btn-decrease');
+
+        increaseButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const input = document.querySelector(`.cantidad-input[data-id="${id}"]`);
+                let cantidad = parseInt(input.value);
+                input.value = cantidad + 1;
+                actualizarSubtotal(id);
+                actualizarTotal();
+            });
+        });
+
+        decreaseButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const input = document.querySelector(`.cantidad-input[data-id="${id}"]`);
+                let cantidad = parseInt(input.value);
+                if (cantidad > 0) {
+                    input.value = cantidad - 1;
+                    actualizarSubtotal(id);
+                    actualizarTotal();
+                }
+            });
+        });
+
+        function actualizarSubtotal(id) {
+            const input = document.querySelector(`.cantidad-input[data-id="${id}"]`);
+            const cardBody = input.closest('.card-body');
+
+            const precioTexto = cardBody.querySelector('.card-text').textContent;
+            const precio = parseFloat(precioTexto.replace("Precio: $", ""));
+            const subtotalElement = cardBody.querySelector(`#subtotal-${id}`);
+
+            const nuevoSubtotal = (parseInt(input.value) * precio).toFixed(2);
+            subtotalElement.textContent = nuevoSubtotal;
+        }
+
+        function actualizarTotal() {
+            const subtotales = document.querySelectorAll('.subtotal');
+            let total = 0.0;
+
+            subtotales.forEach(sub => {
+                total += parseFloat(sub.textContent);
+            });
+
+            document.getElementById('total-carrito').textContent = total.toFixed(2);
+        }
+    });
+</script>
+
 {% endblock %}

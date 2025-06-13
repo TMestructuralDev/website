@@ -19,9 +19,7 @@ class Carrito:
                 'slug': producto.slug,
                 'id': producto.id,
             }
-        else:
-            self.carrito[id]['cantidad'] += 1
-        self.guardar()
+            self.guardar()
 
     def eliminar(self, producto):
         id = str(producto.id)
@@ -39,8 +37,24 @@ class Carrito:
 
     def __iter__(self):
         for item in self.carrito.values():
-            item['subtotal'] = float(item['precio']) * item['cantidad']
-            yield item
+            item_copy = item.copy()
+            item_copy['subtotal'] = float(item_copy['precio']) * item_copy['cantidad']
+            yield item_copy
 
     def total(self):
         return sum(float(item['precio']) * item['cantidad'] for item in self.carrito.values())
+    
+    def aumentar(self, producto):
+        id = str(producto.id)
+        if id in self.carrito:
+            self.carrito[id]['cantidad'] += 1
+            self.guardar()
+
+    def disminuir(self, producto):
+        id = str(producto.id)
+        if id in self.carrito:
+            self.carrito[id]['cantidad'] -= 1
+            if self.carrito[id]['cantidad'] <= 0:
+                self.eliminar(producto)
+            else:
+                self.guardar()

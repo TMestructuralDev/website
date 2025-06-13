@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'tienda.apps.TiendaConfig', 
     'home.apps.HomeConfig',
     'usuarios.apps.UsuariosConfig',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'sitioweb.urls'
@@ -78,10 +80,15 @@ WSGI_APPLICATION = 'sitioweb.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': '2025estructural',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
+
 
 
 # Password validation
@@ -121,6 +128,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [BASE_DIR / "static"]
+#STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -132,3 +140,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 LOGIN_REDIRECT_URL = '/'
+
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
