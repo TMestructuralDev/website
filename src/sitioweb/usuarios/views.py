@@ -17,3 +17,6 @@ def registro(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+def perfil(request):
+    return render(request, 'perfil/perfil.html')

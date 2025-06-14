@@ -5,8 +5,6 @@
 
 {% block content %}
 
-{#<script src="{% static 'mdb/js/mdb.umd.min.js' %}"></script>#}
-
 <div class="container-fluid mt-4">
 
     <div style="padding: 20px;" >
@@ -148,6 +146,11 @@
 
 </div>
 
+{% endblock content %}
+
+
+{% block scripts %}
+{{ block.super }}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Inicializar ambos carruseles
@@ -162,4 +165,6 @@
     });
 </script>
 
-{% endblock content %}
+{% endblock scripts %}
+
+
