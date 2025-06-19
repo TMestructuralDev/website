@@ -1,5 +1,8 @@
 from django.db import models
 from django.utils.text import slugify
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+from django.core.cache import cache
 
 # Create your models here.
 
@@ -41,3 +44,7 @@ class Segmento(models.Model):
         return self.nombre
     
 
+@receiver([post_save, post_delete], sender=Producto)
+@receiver([post_save, post_delete], sender=Segmento)
+def invalidate_cache(sender, **kwargs):
+    cache.delete('productos_destacados')

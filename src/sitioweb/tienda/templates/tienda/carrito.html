@@ -29,10 +29,18 @@
         </div>
         <hr>
         <span id="total-carrito">{{ carrito.total|floatformat:2 }}</span>
+
+        <!-- Botón de PayPal -->
+        <div class="container mt-4 mb-4">
+            <div id="paypal-button-container"></div>
+        </div>
+        
     {% else %}
         <p>No hay productos en el carrito.</p>
     {% endif %}
 </div>
+
+
 
 <!-- Necesitamos el token CSRF para AJAX -->
 <form id="csrf-form">{% csrf_token %}</form>
@@ -41,6 +49,8 @@
 
 {% block scripts %}
 {{ block.super }}
+
+<script src="https://www.paypal.com/sdk/js?client-id=AREfGsdG4hEaiJ59gtWlf-DQjksWzISXQJ7_jgHYafjT-56tF-3dS8Uz99HXOEm5nqBCabiZxddv70_r&currency=MXN"></script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -93,6 +103,41 @@
 
             document.getElementById('total-carrito').textContent = total.toFixed(2);
         }
+
+        // PayPal
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                const total = document.getElementById('total-carrito').textContent;
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: total
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    fetch("/pago-completado/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify({
+                            orderID: data.orderID,
+                            details: details
+                        })
+                    }).then(response => response.json()).then(data => {
+                        if (data.status === "ok") {
+                            window.location.href = "/gracias/";
+                        } else {
+                            alert("Error procesando el pago.");
+                        }
+                    });
+                });
+            }
+        }).render('#paypal-button-container');
     });
 </script>
 

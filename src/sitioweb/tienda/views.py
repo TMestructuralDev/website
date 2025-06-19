@@ -67,6 +67,22 @@ def ver_carrito(request):
         #print(f"ID en carrito: {item.get('id')} tipo: {type(item.get('id'))}")
     return render(request, 'tienda/carrito.html', {'carrito': carrito})
 
+@require_POST
+def aumentar_cantidad(request):
+    producto_id = request.POST.get('producto_id')
+    producto = get_object_or_404(Producto, id=producto_id)
+    carrito = Carrito(request)
+    carrito.aumentar(producto)
+    return redirect('ver_carrito')  # o como se llame tu url para mostrar el carrito
+
+@require_POST
+def disminuir_cantidad(request):
+    producto_id = request.POST.get('producto_id')
+    producto = get_object_or_404(Producto, id=producto_id)
+    carrito = Carrito(request)
+    carrito.disminuir(producto)
+    return redirect('ver_carrito')
+
 @csrf_exempt  # solo para desarrollo; en producción usa tokens de seguridad
 def actualizar_cantidad(request):
     if request.method == 'POST':
@@ -86,21 +102,26 @@ def actualizar_cantidad(request):
 
     return JsonResponse({'status': 'error'}, status=400)
 
-@require_POST
-def aumentar_cantidad(request):
-    producto_id = request.POST.get('producto_id')
-    producto = get_object_or_404(Producto, id=producto_id)
-    carrito = Carrito(request)
-    carrito.aumentar(producto)
-    return redirect('ver_carrito')  # o como se llame tu url para mostrar el carrito
+@csrf_exempt
+def pago_completado(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        order_id = data.get("orderID")
+        details = data.get("details")
 
-@require_POST
-def disminuir_cantidad(request):
-    producto_id = request.POST.get('producto_id')
-    producto = get_object_or_404(Producto, id=producto_id)
-    carrito = Carrito(request)
-    carrito.disminuir(producto)
-    return redirect('ver_carrito')
+        # Aquí puedes guardar la orden o marcarla como pagada
+        print("Orden ID:", order_id)
+        print("Cliente:", details.get("payer", {}).get("email_address"))
+
+        # Limpiar carrito si deseas
+        request.session['carrito'] = {}
+
+        return JsonResponse({"status": "ok"})
+    return JsonResponse({"status": "error"}, status=400)
+
+def gracias(request):
+    return render(request, "tienda/gracias.html")
+
 
 def limpiar_carrito(request):
     carrito = Carrito(request)
