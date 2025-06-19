@@ -44,7 +44,30 @@ class Segmento(models.Model):
         return self.nombre
     
 
+'''Funcion para borrar cache'''
 @receiver([post_save, post_delete], sender=Producto)
 @receiver([post_save, post_delete], sender=Segmento)
 def invalidate_cache(sender, **kwargs):
     cache.delete('productos_destacados')
+
+
+''' Modelo para pedidos'''    
+class Pedido(models.Model):
+    nombre_cliente = models.CharField(max_length=100)
+    email = models.EmailField()
+    fecha = models.DateTimeField(auto_now_add=True)
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+    order_id_paypal = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return f'Pedido {self.id} - {self.nombre_cliente}'
+
+
+class PedidoItem(models.Model):
+    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='items')
+    producto = models.ForeignKey(Producto, on_delete=models.SET_NULL, null=True)
+    cantidad = models.PositiveIntegerField()
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def subtotal(self):
+        return self.precio_unitario * self.cantidad

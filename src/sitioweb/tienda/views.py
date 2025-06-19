@@ -102,18 +102,49 @@ def actualizar_cantidad(request):
 
     return JsonResponse({'status': 'error'}, status=400)
 
+from .models import Pedido, PedidoItem
+from tienda.models import Producto
+
 @csrf_exempt
 def pago_completado(request):
     if request.method == "POST":
+        print("Se recibió POST en pago_completado")
         data = json.loads(request.body)
         order_id = data.get("orderID")
         details = data.get("details")
 
-        # Aquí puedes guardar la orden o marcarla como pagada
-        print("Orden ID:", order_id)
-        print("Cliente:", details.get("payer", {}).get("email_address"))
+        nombre_cliente = details.get("payer", {}).get("name", {}).get("given_name", "") + " " + details.get("payer", {}).get("name", {}).get("surname", "")
+        email = details.get("payer", {}).get("email_address", "")
+        total = details.get("purchase_units", [{}])[0].get("amount", {}).get("value", 0)
 
-        # Limpiar carrito si deseas
+        carrito = request.session.get('carrito', {})
+
+        if not carrito:
+            return JsonResponse({"status": "error", "message": "Carrito vacío"}, status=400)
+
+        # Crear pedido
+        pedido = Pedido.objects.create(
+            nombre_cliente=nombre_cliente,
+            email=email,
+            total=total,
+            order_id_paypal=order_id
+        )
+
+        # Crear items
+        for item in carrito.values():
+            producto_id = item.get("id")
+            try:
+                producto = Producto.objects.get(id=producto_id)
+                PedidoItem.objects.create(
+                    pedido=pedido,
+                    producto=producto,
+                    cantidad=item.get("cantidad"),
+                    precio_unitario=item.get("precio")
+                )
+            except Producto.DoesNotExist:
+                continue
+
+        # Limpiar carrito
         request.session['carrito'] = {}
 
         return JsonResponse({"status": "ok"})

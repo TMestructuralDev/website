@@ -118,7 +118,7 @@
             },
             onApprove: function(data, actions) {
                 return actions.order.capture().then(function(details) {
-                    fetch("/pago-completado/", {
+                    fetch("/tienda/pago-completado/", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -130,7 +130,7 @@
                         })
                     }).then(response => response.json()).then(data => {
                         if (data.status === "ok") {
-                            window.location.href = "/gracias/";
+                            window.location.href = "/tienda/gracias/";
                         } else {
                             alert("Error procesando el pago.");
                         }
