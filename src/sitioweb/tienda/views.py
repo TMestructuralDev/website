@@ -67,6 +67,7 @@ def ver_carrito(request):
         #print(f"ID en carrito: {item.get('id')} tipo: {type(item.get('id'))}")
     return render(request, 'tienda/carrito.html', {'carrito': carrito})
 
+
 @require_POST
 def aumentar_cantidad(request):
     producto_id = request.POST.get('producto_id')
