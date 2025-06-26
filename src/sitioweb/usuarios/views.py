@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from .forms import RegistroForm
 from django.contrib import messages
 from django.contrib.auth import logout
+from tienda.models import Producto
 
 def registro(request):
     if request.method == 'POST':
@@ -18,5 +19,6 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-def perfil(request):
-    return render(request, 'perfil/perfil.html')
+def perfil(request):  
+    return render(request, 'perfil/perfil.html') 
+    

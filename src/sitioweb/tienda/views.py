@@ -6,9 +6,8 @@ from django.views.decorators.http import require_POST
 from .models import Producto, Categoria
 from home.utils import obtener_productos_destacados
 from .cart import Carrito
+from django.urls import reverse
 
-
-#from django.http import HttpResponse
 
 # Create your views here.
 
@@ -18,7 +17,7 @@ def producto_detalle(request, slug):
     productos_destacados = obtener_productos_destacados()
     productos = Producto.objects.only("id", "nombre", "slug", "descripcion", "imagen", "precio")  # Optimización
     context = {
-        'productos_destacados': productos_destacados,
+        #'productos_destacados': productos_destacados,#
         'productos': productos,
         'producto': producto,
     }
@@ -39,7 +38,7 @@ def listado_productos(request):
 
     context = {
         'productos': productos,
-        'productos_destacados': productos_destacados,
+        #'productos_destacados': productos_destacados,#
         'categorias': categorias,
         'categorias_filtradas': categorias_filtradas,
     }
@@ -159,3 +158,23 @@ def limpiar_carrito(request):
     carrito = Carrito(request)
     carrito.limpiar()
     return redirect('ver_carrito')
+
+
+'''Motor de busqueda'''
+def autocompletar_productos(request):
+    term = request.GET.get("term", "")
+    productos = Producto.objects.filter(nombre__icontains=term)[:5]
+    resultados = [
+        {
+            "nombre": p.nombre,
+            "url": reverse("producto_detalle", kwargs={"slug": p.slug})
+        } for p in productos
+    ]
+    return JsonResponse(resultados, safe=False)
+
+def buscar_producto(request):
+    query = request.GET.get("q", "").strip()
+    producto = Producto.objects.filter(nombre__icontains=query).first()
+    if producto:
+        return redirect("producto_detalle", slug=producto.slug)
+    return redirect("tienda")

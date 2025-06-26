@@ -1,7 +1,6 @@
 html {
-    scroll-behavior: smooth; /* Transición suave al hacer scroll */
+    scroll-behavior: smooth; 
 }
-
 
 body {
     background: rgba(129, 127, 127, 0.418);
@@ -11,23 +10,32 @@ body {
 }
 
 .video-background-container {
-    position: relative;
-    height: 500px; /* igual que el original */
+    position: relative; 
     overflow: hidden;
 }
 
 .video-background {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    min-width: 100%;
-    min-height: 100%;
-    width: auto;
+    width: 100%;
     height: auto;
-    z-index: -1;
-    transform: translate(-50%, -50%);
-    object-fit: cover;
+    display: block;
 }
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+
 
 .home-content {
     height: max-content;  /* Ajusta este valor según tus necesidades */

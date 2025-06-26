@@ -12,7 +12,6 @@ def home(request):
     context = {
         'productos_novedades': productos['Novedades'],
         'productos_mas_vendidos': productos['Mas Vendidos'],
-        'productos_destacados': productos['Destacados'],
         'productos_ofertas': productos['Ofertas'],
     }
 

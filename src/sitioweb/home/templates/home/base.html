@@ -34,15 +34,10 @@
                                 height="20" loading="lazy" />
                         </a>
 
-                        <!-- Search form -->
-                        <form class="d-flex input-group w-auto my-auto">
-                            <input autocomplete="off" type="search"
-                                class="form-control rounded"
-                                placeholder="Search"
-                                style="min-width: 125px" />
-                            <span
-                                class="input-group-text border-0 d-none d-md-flex"><i
-                                    class="fas fa-search"></i></span>
+                        <!-- Search form con autocompletado -->
+                        <form method="get" action="{% url 'buscar_producto' %}" class="d-flex input-group w-auto my-auto position-relative">
+                            <input type="search" name="q" id="searchInput" class="form-control rounded" placeholder="Buscar producto..." autocomplete="off" style="min-width: 125px;" required>
+                            <div id="suggestions" class="list-group position-absolute w-100" style="z-index: 1000; top: 100%; left: 0; background-color: #f8f9fa;"></div>
                         </form>
                     </div>
 
@@ -133,43 +128,33 @@
             <!-- /Navbar -->
 
             <!-- Video de fondo del header -->
-            <div id="intro" class="video-background-container"
-                style="height: 600px; width: 100%; overflow: hidden; position: relative;">
+            <div id="intro" class="video-background-container">
                 <video autoplay muted loop preload="none" class="video-background">
-                    <source src="{% static 'home/videos/backgroundvideo.mp4' %}"
-                        type="video/mp4">
+                    <source src="{% static 'home/videos/backgroundvideo.mp4' %}" type="video/mp4">
                     Tu navegador no soporta el video HTML5.
                 </video>
 
-                <div class="mask text-white"
-                    style="background-color: rgba(0, 0, 0, 0.6);">
-                    <div
-                        class="container d-flex flex-column align-items-center justify-content-center text-center h-100"
-                        style="position: relative; top: -100px;">
-                        <div class="text-white">
-                            <h1 class="mb-3">CIMA Soluciones</h1>
-                            <h4 class="mb-4">¡Promociones de hasta el 70%!</h4>
-                            <a class="btn btn-outline-light btn-lg mb-3"
-                                href="#!" role="button">
-                                EXPLORA NUESTRAS OFERTAS <i
-                                    class="fas fa-gem ms-1"></i>
-                            </a>
-                        </div>
+                <!-- Contenedor opaco sobre el video -->
+                <div class="overlay text-white d-flex flex-column justify-content-center align-items-center text-center">
+                    
+                    <!-- Texto -->
+                    <div class="mb-4">
+                        <h1 class="mb-3">CIMA Soluciones</h1>
+                        <h4 class="mb-4">¡Promociones de hasta el 70%!</h4>
+                        <a class="btn btn-outline-light btn-lg mb-3" href="#!" role="button">
+                            EXPLORA NUESTRAS OFERTAS <i class="fas fa-gem ms-1"></i>
+                        </a>
                     </div>
 
                     <!-- Carrusel debajo del texto -->
-                    <div id="destacados" class="carousel slide"
-                        data-mdb-ride="carousel"
-                        style="position: absolute; bottom: 50px; left: 0; width: 100%;">
+                    <div id="destacados" class="carousel slide w-100 px-3" data-mdb-ride="carousel">
                         <div class="carousel-inner">
-
                             {% for producto in productos_destacados %}
                                 {% if forloop.counter0|divisibleby:3 %}
                                     <div class="carousel-item {% if forloop.first %}active{% endif %}">
                                         <div class="d-flex justify-content-center">
                                 {% endif %}
 
-                                <!-- Tarjeta del producto -->
                                 <div class="card mx-2" style="width: 12rem; height: 16rem;">
                                     <a href="{% url 'producto_detalle' slug=producto.slug %}#seccion-detalle" style="height: 65%; display: block; overflow: hidden;">
                                         <img src="{{ producto.imagen.url }}" loading="lazy" class="card-img-top" alt="{{ producto.nombre }}" style="object-fit: contain; height: 100%; width: 100%;">
@@ -185,34 +170,23 @@
                                     </div>
                                 {% endif %}
                             {% endfor %}
-
                         </div>
 
-                        <!-- Controles del carrusel -->
-                        <button class="carousel-control-prev" type="button"
-                            data-mdb-target="#destacados"
-                            data-mdb-slide="prev">
-                            <span class="carousel-control-prev-icon"
-                                aria-hidden="true"></span>
+                        <!-- Controles -->
+                        <button class="carousel-control-prev" type="button" data-mdb-target="#destacados" data-mdb-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                         </button>
-
-                        <button class="carousel-control-next" type="button"
-                            data-mdb-target="#destacados"
-                            data-mdb-slide="next">
-                            <span class="carousel-control-next-icon"
-                                aria-hidden="true"></span>
+                        <button class="carousel-control-next" type="button" data-mdb-target="#destacados" data-mdb-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
                         </button>
-
                     </div>
                 </div>
             </div>
 
-            <!-- /Imagen de fondo -->
-
         </header>
 
         <!-- Contenido Principal (que cambiará según la página) -->
-        <main role="main">
+        <main>
             {% block content %}
             {% endblock %}
         </main>
@@ -355,6 +329,74 @@
                 new mdb.Dropdown(dropdownElement);
                 }
             });
+        </script>
+
+        <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchInput = document.getElementById("searchInput");
+            const suggestionsBox = document.getElementById("suggestions");
+            let currentFocus = -1;
+
+            searchInput.addEventListener("input", function () {
+                const query = this.value;
+                suggestionsBox.innerHTML = "";
+                currentFocus = -1;
+
+                if (query.length < 2) return;
+
+                fetch(`/tienda/autocompletar/?term=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        data.forEach((item, index) => {
+                            const option = document.createElement("a");
+                            option.classList.add("list-group-item", "list-group-item-action");
+                            option.textContent = item.nombre;
+                            option.href = item.url;
+                            option.setAttribute("data-index", index);
+                            suggestionsBox.appendChild(option);
+                        });
+                    });
+            });
+
+            searchInput.addEventListener("keydown", function (e) {
+                const items = suggestionsBox.getElementsByTagName("a");
+                if (!items.length) return;
+
+                if (e.key === "ArrowDown") {
+                    currentFocus++;
+                    marcarActivo(items);
+                    e.preventDefault();
+                } else if (e.key === "ArrowUp") {
+                    currentFocus--;
+                    marcarActivo(items);
+                    e.preventDefault();
+                } else if (e.key === "Enter") {
+                    if (currentFocus > -1 && items[currentFocus]) {
+                        e.preventDefault();
+                        window.location.href = items[currentFocus].href;
+                    }
+                }
+            });
+
+            function marcarActivo(items) {
+                quitarActivo(items);
+                if (currentFocus >= items.length) currentFocus = 0;
+                if (currentFocus < 0) currentFocus = items.length - 1;
+                items[currentFocus].classList.add("active");
+            }
+
+            function quitarActivo(items) {
+                for (let i = 0; i < items.length; i++) {
+                    items[i].classList.remove("active");
+                }
+            }
+
+            document.addEventListener("click", function (e) {
+                if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                    suggestionsBox.innerHTML = "";
+                }
+            });
+        });
         </script>
         {% endblock scripts %}
 
