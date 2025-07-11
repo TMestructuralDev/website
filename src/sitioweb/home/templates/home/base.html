@@ -101,25 +101,24 @@
                         </li>
 
                         <!-- Avatar -->
-
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center"
                             href="#" id="avatarDropdown"
                             role="button" data-mdb-toggle="dropdown"
                             aria-expanded="false">
                                 {% if user.is_authenticated %}
-                                <span class="me-2">{{ user.username }}</span>
-                                <i class="fas fa-user-circle" style="font-size: 30px;"></i>
-                                {% else %}
-                                <i class="fas fa-user-circle" style="font-size: 30px;"></i>
+                                    <span class="me-2">{{ user.username }}</span>
                                 {% endif %}
+                                <i class="fas fa-user-circle" style="font-size: 30px;"></i>
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end"
-                                aria-labelledby="avatarDropdown">
-                                <li><a class="dropdown-item" href="{% url 'perfil' %}">Mi cuenta</a></li>
-                                <li><a class="dropdown-item" href="{% url 'registro' %}">Regristro</a></li>
-                                <li><a class="dropdown-item" href="{% url 'login' %}">Ingresar</a></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="avatarDropdown">
+                                {% if user.is_authenticated %}
+                                    <li><a class="dropdown-item" href="{% url 'perfil' %}">Mi cuenta</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
+                                {% else %}
+                                    <li><a class="dropdown-item" href="{% url 'registro' %}">Registro</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'login' %}">Ingresar</a></li>
+                                {% endif %}
                             </ul>
                         </li>
                     </ul>
