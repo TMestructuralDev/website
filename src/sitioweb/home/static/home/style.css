@@ -3,7 +3,7 @@ html {
 }
 
 body {
-    background: rgba(129, 127, 127, 0.418);
+    background: rgb(255, 234, 214);
     background-size: cover;  
     background-position: center center;
     position: relative;
@@ -38,21 +38,38 @@ body {
 
 
 .home-content {
-    height: max-content;  /* Ajusta este valor según tus necesidades */
+    height: max-content;  
+}
+
+.container-fluid.mt-4 {
+  margin-top: 0 !important; 
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.seccion {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    min-height: auto !important;
+    height: auto !important;
 }
 
 .carousel-control-prev-icon,
 .carousel-control-next-icon {
-  color: #ff6600; /* Color naranja */
-  transform: scale(2); /* 2x más grande (ajusta el valor) */
-  transition: transform 0.2s; /* Efecto suave opcional */
+  color: #ff6600; 
+  transform: scale(2); 
+  transition: transform 0.2s; 
 }
 
 .carousel-inner {
     height: max-content;
     overflow: visible;
 }
-
+/*
+* {
+  outline: 1px solid rgba(0, 255, 0, 0.2); 
+}
+*/
 
 .card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -156,3 +173,4 @@ body {
 .dropdown-menu {
     z-index: 9999;
 }
+
