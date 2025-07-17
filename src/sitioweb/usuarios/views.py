@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 from .forms import RegistroForm
 from django.contrib import messages
 from django.contrib.auth import logout
-from tienda.models import Producto
+from tienda.models import Pedido
 
 def registro(request):
     if request.method == 'POST':
@@ -19,6 +20,22 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-def perfil(request):  
-    return render(request, 'perfil/perfil.html') 
+'''def perfil(request):  
+    return render(request, 'perfil/perfil.html') '''
     
+    
+@login_required
+def editar_datos(request):
+    if request.method == 'POST':
+        user = request.user
+        user.first_name = request.POST['first_name']
+        user.last_name = request.POST['last_name']
+        user.email = request.POST['email']
+        user.save()
+        messages.success(request, 'Datos actualizados correctamente.')
+        return redirect('perfil')
+    
+@login_required
+def perfil(request):
+    pedidos = Pedido.objects.filter(usuario=request.user).order_by('-fecha')
+    return render(request, 'perfil/perfil.html', {'pedidos': pedidos})
