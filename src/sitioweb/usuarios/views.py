@@ -4,6 +4,8 @@ from .forms import RegistroForm
 from django.contrib import messages
 from django.contrib.auth import logout
 from tienda.models import Pedido
+from tienda.cart import Carrito
+
 
 def registro(request):
     if request.method == 'POST':
@@ -38,4 +40,6 @@ def editar_datos(request):
 @login_required
 def perfil(request):
     pedidos = Pedido.objects.filter(usuario=request.user).order_by('-fecha')
-    return render(request, 'perfil/perfil.html', {'pedidos': pedidos})
+    carrito = Carrito(request)
+    productos_carrito = list(carrito) 
+    return render(request, 'perfil/perfil.html', {'pedidos': pedidos, 'carrito_items': productos_carrito, 'total_carrito': carrito.total()})

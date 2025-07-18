@@ -70,10 +70,56 @@
 
         <!-- Carrito -->
         <div class="tab-pane fade" id="carrito" role="tabpanel" aria-labelledby="list-carrito-list">
-          <h3>Carrito</h3>
-          <p>Tu carrito actual.</p>
+          <h3>Carrito de Compras</h3>
+
+          {% if carrito_items %}
+            <ul class="list-group mb-3">
+              {% for item in carrito_items %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center">
+                    <img src="{{ item.imagen }}" alt="{{ item.nombre }}" style="width: 50px; height: 50px; object-fit: cover; margin-right: 10px;">
+                    <div>
+                      <strong>{{ item.nombre }}</strong><br>
+
+                      <!-- Cantidad con botones -->
+                      <div class="d-flex align-items-center mt-1">
+                        <label class="me-2 mb-0">Cantidad:</label>
+                        <div class="input-group input-group-sm" style="width: 120px;">
+                          <button class="btn btn-outline-secondary" type="button" disabled>-</button>
+                          <input type="text" class="form-control text-center" value="{{ item.cantidad }}" readonly>
+                          <button class="btn btn-outline-secondary" type="button" disabled>+</button>
+                        </div>
+                      </div>
+
+                      <div class="mt-1">Precio unitario: ${{ item.precio }}</div>
+                    </div>
+                  </div>
+
+                  <span class="badge bg-primary rounded-pill">
+                    Subtotal: ${{ item.subtotal|floatformat:2 }}
+                  </span>
+                </li>
+              {% endfor %}
+            </ul>
+
+            <h5 class="text-end mb-4">Total: <span class="badge bg-success">${{ total_carrito|floatformat:2 }}</span></h5>
+
+            <div class="d-flex justify-content-end gap-2">
+              <!-- Botón de limpiar carrito -->
+              <button class="btn btn-outline-danger" type="button" disabled>
+                <i class="fas fa-trash-alt me-2"></i> Limpiar carrito
+              </button>
+
+              <!-- Botón de comprar -->
+              <button class="btn btn-success" type="button" disabled>
+                <i class="fas fa-shopping-cart me-2"></i> Comprar carrito
+              </button>
+            </div>
+
+          {% else %}
+            <p>No tienes productos en el carrito.</p>
+          {% endif %}
         </div>
-      </div>
     </div>
   </div>
 </div>
