@@ -45,6 +45,19 @@
         <!-- Cambiar contraseña -->
         <div class="tab-pane fade" id="cambiar-password" role="tabpanel" aria-labelledby="list-password-list">
           <h3>Cambiar Contraseña</h3>
+          
+          <form method="POST" action="">
+            {% csrf_token %}
+            {{ form_password.as_p }}
+            <input type="hidden" name="cambiar_password" value="1">
+            <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
+          </form>
+
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} mt-3">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
         </div>
 
         <!-- Mis pedidos -->
@@ -127,6 +140,6 @@
 
 {% block scripts %}
 {{ block.super }}
-<!-- Asegúrate que mdb.min.js esté cargado -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.js"></script>
 {% endblock scripts %}
