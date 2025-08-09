@@ -66,4 +66,9 @@ def perfil(request):
         else:
             messages.error(request, 'Por favor corrige los errores abajo.')
             
-    return render(request, 'perfil/perfil.html', {'pedidos': pedidos, 'carrito_items': productos_carrito, 'total_carrito': carrito.total(), 'form_password': form_password})
+    return render(request, 'perfil/perfil.html', {
+        'pedidos': pedidos,
+        'carrito_items': productos_carrito,
+        'total_carrito': carrito.total,   
+        'form_password': form_password
+    })

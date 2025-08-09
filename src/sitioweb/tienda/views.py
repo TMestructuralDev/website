@@ -7,6 +7,8 @@ from .models import Producto, Categoria
 from home.utils import obtener_productos_destacados
 from .cart import Carrito
 from django.urls import reverse
+from .models import Pedido, PedidoItem
+from tienda.models import Producto
 
 
 # Create your views here.
@@ -62,9 +64,14 @@ def eliminar_del_carrito(request, producto_id):
 
 def ver_carrito(request):
     carrito = Carrito(request)
-    #for key, item in carrito.carrito.items():
-        #print(f"ID en carrito: {item.get('id')} tipo: {type(item.get('id'))}")
-    return render(request, 'tienda/carrito.html', {'carrito': carrito})
+    # carrito es iterable y cada item tiene subtotal calculado
+    # total es la propiedad carrito.total
+
+    context = {
+        'carrito': carrito,
+        'total_carrito': carrito.total,
+    }
+    return render(request, 'tienda/carrito.html', context)
 
 
 @require_POST
@@ -83,27 +90,25 @@ def disminuir_cantidad(request):
     carrito.disminuir(producto)
     return redirect('ver_carrito')
 
-@csrf_exempt  # solo para desarrollo; en producción usa tokens de seguridad
-def actualizar_cantidad(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        producto_id = int(data.get('id'))  # asegúrate que sea int
-        cantidad = int(data.get('cantidad'))
+def actualizar_cantidad(request, producto_id, cantidad):
+    carrito = Carrito(request)
+    cantidad = int(cantidad)
+    producto = get_object_or_404(Producto, id=producto_id)
 
-        carrito = request.session.get('carrito', {})
-        for key, item in carrito.items():
-            if int(item['id']) == producto_id:
-                item['cantidad'] = max(1, cantidad)  # asegúrate que mínimo sea 1
-                item['subtotal'] = round(float(item['precio']) * item['cantidad'], 2)
-                break
+    if cantidad <= 0:
+        carrito.eliminar(producto)
+        subtotal = 0
+    else:
+        if str(producto_id) in carrito.carrito:
+            carrito.carrito[str(producto_id)]["cantidad"] = cantidad
+            carrito.guardar()
+        subtotal = float(carrito.carrito[str(producto_id)]["precio"]) * cantidad if str(producto_id) in carrito.carrito else 0
 
-        request.session['carrito'] = carrito
-        return JsonResponse({'status': 'ok', 'cantidad': cantidad})
-
-    return JsonResponse({'status': 'error'}, status=400)
-
-from .models import Pedido, PedidoItem
-from tienda.models import Producto
+    total = carrito.total
+    return JsonResponse({
+        "subtotal": round(subtotal, 2),
+        "total": round(total, 2),
+    })
 
 @csrf_exempt
 def pago_completado(request):

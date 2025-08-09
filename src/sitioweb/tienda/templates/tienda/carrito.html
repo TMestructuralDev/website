@@ -9,7 +9,7 @@
     {% if carrito.carrito %}
         <div class="row">
             {% for item in carrito %}
-                <div class="col-md-4 mb-3" id="producto-{{ item.producto_id }}">
+                <div class="col-md-4 mb-3" id="producto-{{ item.id }}">
                     <div class="card">
                         <img src="{{ item.imagen }}" class="card-img-top" style="height: 200px; object-fit: contain;">
                         <div class="card-body">
@@ -17,11 +17,13 @@
                             <p class="card-text">Precio: ${{ item.precio }}</p>
 
                             <div class="input-group mb-3">
-                                <button class="btn btn-outline-secondary btn-decrease" type="button" data-id="{{ forloop.counter0 }}">-</button>
-                                <input type="number" class="form-control text-center cantidad-input" value="{{ item.cantidad }}" min="0" data-id="{{ forloop.counter0 }}" readonly>
-                                <button class="btn btn-outline-secondary btn-increase" type="button" data-id="{{ forloop.counter0 }}">+</button>
+                                <button class="btn btn-outline-secondary btn-decrease" type="button" data-id="{{ item.id }}">-</button>
+                                <input type="number" class="form-control text-center cantidad-input" value="{{ item.cantidad }}" min="0" data-id="{{ item.id }}" readonly>
+                                <button class="btn btn-outline-secondary btn-increase" type="button" data-id="{{ item.id }}">+</button>
                             </div>
-                            <p class="card-text">Subtotal: $<span class="subtotal" id="subtotal-{{ forloop.counter0 }}">{{ item.subtotal|floatformat:2 }}</span></p>
+                            <p class="card-text">Subtotal: $<span class="subtotal" id="subtotal-{{ item.id }}">{{ item.cantidad|floatformat:2|floatformat }} * {{ item.precio|floatformat:2|floatformat }}</span></p>
+                            <!-- Si no tienes subtotal en el contexto, puedes calcular así: -->
+                            <p class="card-text">Subtotal: $<span class="subtotal" id="subtotal-{{ item.id }}">{{ item.cantidad|floatformat:2|floatformat|floatformat:"2"|floatformat }} * {{ item.precio|floatformat:"2" }}</span></p>
                         </div>
                     </div>
                 </div>
@@ -40,9 +42,6 @@
     {% endif %}
 </div>
 
-
-
-<!-- Necesitamos el token CSRF para AJAX -->
 <form id="csrf-form">{% csrf_token %}</form>
 
 {% endblock %}
@@ -53,6 +52,10 @@
 <script src="https://www.paypal.com/sdk/js?client-id=AREfGsdG4hEaiJ59gtWlf-DQjksWzISXQJ7_jgHYafjT-56tF-3dS8Uz99HXOEm5nqBCabiZxddv70_r&currency=MXN"></script>
 
 <script>
+    function getActualizarUrl(id, cantidad) {
+        return "{% url 'actualizar_cantidad' 0 0 %}".replace("0/0", id + "/" + cantidad);
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         const increaseButtons = document.querySelectorAll('.btn-increase');
         const decreaseButtons = document.querySelectorAll('.btn-decrease');
@@ -61,10 +64,19 @@
             button.addEventListener('click', function() {
                 const id = this.dataset.id;
                 const input = document.querySelector(`.cantidad-input[data-id="${id}"]`);
-                let cantidad = parseInt(input.value);
-                input.value = cantidad + 1;
-                actualizarSubtotal(id);
-                actualizarTotal();
+                let cantidad = parseInt(input.value) + 1;
+
+                fetch(getActualizarUrl(id, cantidad))
+                    .then(response => {
+                        if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                        return response.json();
+                    })
+                    .then(data => {
+                        input.value = cantidad;
+                        document.getElementById(`subtotal-${id}`).textContent = data.subtotal.toFixed(2);
+                        document.getElementById('total-carrito').textContent = data.total.toFixed(2);
+                    })
+                    .catch(error => console.error('Fetch error:', error));
             });
         });
 
@@ -74,71 +86,62 @@
                 const input = document.querySelector(`.cantidad-input[data-id="${id}"]`);
                 let cantidad = parseInt(input.value);
                 if (cantidad > 0) {
-                    input.value = cantidad - 1;
-                    actualizarSubtotal(id);
-                    actualizarTotal();
+                    cantidad -= 1;
+                    fetch(getActualizarUrl(id, cantidad))
+                        .then(response => {
+                            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                            return response.json();
+                        })
+                        .then(data => {
+                            input.value = cantidad;
+                            document.getElementById(`subtotal-${id}`).textContent = data.subtotal.toFixed(2);
+                            document.getElementById('total-carrito').textContent = data.total.toFixed(2);
+
+                            if (cantidad === 0) {
+                                const productoDiv = document.getElementById(`producto-${id}`);
+                                if (productoDiv) productoDiv.remove();
+                            }
+                        })
+                        .catch(error => console.error('Fetch error:', error));
                 }
             });
         });
-
-        function actualizarSubtotal(id) {
-            const input = document.querySelector(`.cantidad-input[data-id="${id}"]`);
-            const cardBody = input.closest('.card-body');
-
-            const precioTexto = cardBody.querySelector('.card-text').textContent;
-            const precio = parseFloat(precioTexto.replace("Precio: $", ""));
-            const subtotalElement = cardBody.querySelector(`#subtotal-${id}`);
-
-            const nuevoSubtotal = (parseInt(input.value) * precio).toFixed(2);
-            subtotalElement.textContent = nuevoSubtotal;
-        }
-
-        function actualizarTotal() {
-            const subtotales = document.querySelectorAll('.subtotal');
-            let total = 0.0;
-
-            subtotales.forEach(sub => {
-                total += parseFloat(sub.textContent);
-            });
-
-            document.getElementById('total-carrito').textContent = total.toFixed(2);
-        }
-
-        // PayPal
-        paypal.Buttons({
-            createOrder: function(data, actions) {
-                const total = document.getElementById('total-carrito').textContent;
-                return actions.order.create({
-                    purchase_units: [{
-                        amount: {
-                            value: total
-                        }
-                    }]
-                });
-            },
-            onApprove: function(data, actions) {
-                return actions.order.capture().then(function(details) {
-                    fetch("/tienda/pago-completado/", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-                        },
-                        body: JSON.stringify({
-                            orderID: data.orderID,
-                            details: details
-                        })
-                    }).then(response => response.json()).then(data => {
-                        if (data.status === "ok") {
-                            window.location.href = "/tienda/gracias/";
-                        } else {
-                            alert("Error procesando el pago.");
-                        }
-                    });
-                });
-            }
-        }).render('#paypal-button-container');
     });
+
+    // PayPal buttons code (sin cambios)
+
+    paypal.Buttons({
+        createOrder: function(data, actions) {
+            const total = document.getElementById('total-carrito').textContent;
+            return actions.order.create({
+                purchase_units: [{
+                    amount: { value: total }
+                }]
+            });
+        },
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
+                fetch("/tienda/pago-completado/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({
+                        orderID: data.orderID,
+                        details: details
+                    })
+                }).then(response => response.json()).then(data => {
+                    if (data.status === "ok") {
+                        window.location.href = "/tienda/gracias/";
+                    } else {
+                        alert("Error procesando el pago.");
+                    }
+                });
+            });
+        }
+    }).render('#paypal-button-container');
+
 </script>
 
-{% endblock scripts %}
+{% endblock %}
