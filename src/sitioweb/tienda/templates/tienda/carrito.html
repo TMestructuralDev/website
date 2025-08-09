@@ -21,9 +21,7 @@
                                 <input type="number" class="form-control text-center cantidad-input" value="{{ item.cantidad }}" min="0" data-id="{{ item.id }}" readonly>
                                 <button class="btn btn-outline-secondary btn-increase" type="button" data-id="{{ item.id }}">+</button>
                             </div>
-                            <p class="card-text">Subtotal: $<span class="subtotal" id="subtotal-{{ item.id }}">{{ item.cantidad|floatformat:2|floatformat }} * {{ item.precio|floatformat:2|floatformat }}</span></p>
-                            <!-- Si no tienes subtotal en el contexto, puedes calcular así: -->
-                            <p class="card-text">Subtotal: $<span class="subtotal" id="subtotal-{{ item.id }}">{{ item.cantidad|floatformat:2|floatformat|floatformat:"2"|floatformat }} * {{ item.precio|floatformat:"2" }}</span></p>
+                            <p class="card-text">Subtotal: $<span class="subtotal" id="subtotal-{{ item.id }}">{{ item.subtotal|floatformat:2 }}</span></p>
                         </div>
                     </div>
                 </div>
