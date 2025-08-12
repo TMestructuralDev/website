@@ -142,4 +142,15 @@
 {{ block.super }}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const tabList = document.getElementById("list-tab");
+    if (tabList) {
+        setTimeout(() => {
+            tabList.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100); 
+    }
+});
+</script>
 {% endblock scripts %}

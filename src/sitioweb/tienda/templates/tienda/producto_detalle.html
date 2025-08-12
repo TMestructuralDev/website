@@ -33,3 +33,20 @@
 
 {% endblock %}
 
+{% block scripts %}
+{{ block.super }}
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const detalle = document.getElementById("seccion-detalle");
+    if (detalle) {
+        // Usamos un pequeño delay para asegurar que todo esté cargado visualmente
+        setTimeout(() => {
+            detalle.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+    }
+});
+</script>
+
+{% endblock %}
+

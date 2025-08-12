@@ -56,5 +56,16 @@
 
     </div>
 </div>
-
 {% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("tienda").scrollIntoView({ behavior: "smooth" });
+});
+</script>
+
+{% endblock scripts %}
+
