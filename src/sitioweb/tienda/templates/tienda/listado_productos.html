@@ -62,9 +62,19 @@
 {{ block.super }}
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    document.getElementById("tienda").scrollIntoView({ behavior: "smooth" });
-});
+  function scrollToHashElement() {
+    if (window.location.hash) {
+      const id = window.location.hash.substring(1);
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(scrollToHashElement, 100);
+  });
 </script>
 
 {% endblock scripts %}

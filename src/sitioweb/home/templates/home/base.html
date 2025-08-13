@@ -300,11 +300,11 @@
     
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-            const destacadosCarousel = new mdb.Carousel(document.getElementById('destacados'));
+                const destacadosCarousel = new mdb.Carousel(document.getElementById('destacados'));
 
-            [destacadosCarousel,].forEach(carousel => {
-                carousel.cycle();
-            });
+                [destacadosCarousel,].forEach(carousel => {
+                    carousel.cycle();
+                });
             });
         </script>
 
@@ -312,76 +312,97 @@
             document.addEventListener('DOMContentLoaded', function () {
                 const dropdownElement = document.querySelector('#avatarDropdown');
                 if (dropdownElement) {
-                new mdb.Dropdown(dropdownElement);
+                    new mdb.Dropdown(dropdownElement);
                 }
             });
         </script>
 
         <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const searchInput = document.getElementById("searchInput");
-            const suggestionsBox = document.getElementById("suggestions");
-            let currentFocus = -1;
+            document.addEventListener("DOMContentLoaded", function () {
+                const searchInput = document.getElementById("searchInput");
+                const suggestionsBox = document.getElementById("suggestions");
+                let currentFocus = -1;
 
-            searchInput.addEventListener("input", function () {
-                const query = this.value;
-                suggestionsBox.innerHTML = "";
-                currentFocus = -1;
+                searchInput.addEventListener("input", function () {
+                    const query = this.value;
+                    suggestionsBox.innerHTML = "";
+                    currentFocus = -1;
 
-                if (query.length < 2) return;
+                    if (query.length < 2) return;
 
-                fetch(`/tienda/autocompletar/?term=${encodeURIComponent(query)}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        data.forEach((item, index) => {
-                            const option = document.createElement("a");
-                            option.classList.add("list-group-item", "list-group-item-action");
-                            option.textContent = item.nombre;
-                            option.href = item.url;
-                            option.setAttribute("data-index", index);
-                            suggestionsBox.appendChild(option);
+                    fetch(`/tienda/autocompletar/?term=${encodeURIComponent(query)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            data.forEach((item, index) => {
+                                const option = document.createElement("a");
+                                option.classList.add("list-group-item", "list-group-item-action");
+                                option.textContent = item.nombre;
+                                option.href = item.url;
+                                option.setAttribute("data-index", index);
+                                suggestionsBox.appendChild(option);
+                            });
                         });
-                    });
-            });
+                });
 
-            searchInput.addEventListener("keydown", function (e) {
-                const items = suggestionsBox.getElementsByTagName("a");
-                if (!items.length) return;
+                searchInput.addEventListener("keydown", function (e) {
+                    const items = suggestionsBox.getElementsByTagName("a");
+                    if (!items.length) return;
 
-                if (e.key === "ArrowDown") {
-                    currentFocus++;
-                    marcarActivo(items);
-                    e.preventDefault();
-                } else if (e.key === "ArrowUp") {
-                    currentFocus--;
-                    marcarActivo(items);
-                    e.preventDefault();
-                } else if (e.key === "Enter") {
-                    if (currentFocus > -1 && items[currentFocus]) {
+                    if (e.key === "ArrowDown") {
+                        currentFocus++;
+                        marcarActivo(items);
                         e.preventDefault();
-                        window.location.href = items[currentFocus].href;
+                    } else if (e.key === "ArrowUp") {
+                        currentFocus--;
+                        marcarActivo(items);
+                        e.preventDefault();
+                    } else if (e.key === "Enter") {
+                        if (currentFocus > -1 && items[currentFocus]) {
+                            e.preventDefault();
+                            window.location.href = items[currentFocus].href;
+                        }
+                    }
+                });
+
+                function marcarActivo(items) {
+                    quitarActivo(items);
+                    if (currentFocus >= items.length) currentFocus = 0;
+                    if (currentFocus < 0) currentFocus = items.length - 1;
+                    items[currentFocus].classList.add("active");
+                }
+
+                function quitarActivo(items) {
+                    for (let i = 0; i < items.length; i++) {
+                        items[i].classList.remove("active");
                     }
                 }
+
+                document.addEventListener("click", function (e) {
+                    if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                        suggestionsBox.innerHTML = "";
+                    }
+                });
             });
+        </script>
 
-            function marcarActivo(items) {
-                quitarActivo(items);
-                if (currentFocus >= items.length) currentFocus = 0;
-                if (currentFocus < 0) currentFocus = items.length - 1;
-                items[currentFocus].classList.add("active");
+        <script>
+        function scrollToHash() {
+            if (window.location.hash) {
+            const id = window.location.hash.substring(1);
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: "smooth", block: "start" });
             }
-
-            function quitarActivo(items) {
-                for (let i = 0; i < items.length; i++) {
-                    items[i].classList.remove("active");
-                }
             }
+        }
 
-            document.addEventListener("click", function (e) {
-                if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
-                    suggestionsBox.innerHTML = "";
-                }
-            });
+        document.addEventListener("DOMContentLoaded", scrollToHash);
+
+        document.addEventListener("click", function(e) {
+            const target = e.target.closest("a[href^='#']");
+            if (target && target.hash) {
+            setTimeout(scrollToHash, 100);
+            }
         });
         </script>
         {% endblock scripts %}

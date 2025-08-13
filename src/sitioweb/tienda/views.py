@@ -8,7 +8,7 @@ from home.utils import obtener_productos_destacados
 from .cart import Carrito
 from django.urls import reverse
 from .models import Pedido, PedidoItem
-from tienda.models import Producto
+#from tienda.models import Producto
 
 
 # Create your views here.
@@ -72,6 +72,15 @@ def ver_carrito(request):
         'total_carrito': carrito.total,
     }
     return render(request, 'tienda/carrito.html', context)
+
+@require_POST
+def limpiar_carrito(request):
+    carrito = Carrito(request)
+    carrito.limpiar()
+    return JsonResponse({
+        "status": "ok",
+        "total": 0.00
+    })
 
 
 @require_POST
@@ -158,11 +167,6 @@ def pago_completado(request):
 def gracias(request):
     return render(request, "tienda/gracias.html")
 
-
-def limpiar_carrito(request):
-    carrito = Carrito(request)
-    carrito.limpiar()
-    return redirect('ver_carrito')
 
 
 '''Motor de busqueda'''

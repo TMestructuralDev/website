@@ -119,12 +119,12 @@
 
             <div class="d-flex justify-content-end gap-2">
               <!-- Botón de limpiar carrito -->
-              <button class="btn btn-outline-danger" type="button" disabled>
+              <button id="btn-limpiar-carrito-perfil" class="btn btn-outline-danger" type="button">
                 <i class="fas fa-trash-alt me-2"></i> Limpiar carrito
               </button>
 
               <!-- Botón de comprar -->
-              <button class="btn btn-success" type="button" disabled>
+              <button id="btn-comprar-carrito-perfil" class="btn btn-success" type="button">
                 <i class="fas fa-shopping-cart me-2"></i> Comprar carrito
               </button>
             </div>
@@ -144,6 +144,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.js"></script>
 
 <script>
+
 document.addEventListener("DOMContentLoaded", function() {
     const tabList = document.getElementById("list-tab");
     if (tabList) {
@@ -151,6 +152,33 @@ document.addEventListener("DOMContentLoaded", function() {
             tabList.scrollIntoView({ behavior: "smooth", block: "start" });
         }, 100); 
     }
+
+    const btnLimpiar = document.getElementById("btn-limpiar-carrito-perfil");
+    const btnComprar = document.getElementById("btn-comprar-carrito-perfil");
+
+    btnLimpiar?.addEventListener("click", () => {
+        fetch("{% url 'limpiar_carrito' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+                "Accept": "application/json",
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "ok") {
+                location.reload(); // o actualizar UI como prefieras
+            } else {
+                alert("Error limpiando el carrito");
+            }
+        })
+        .catch(() => alert("Error en la conexión"));
+    });
+
+    btnComprar?.addEventListener("click", () => {
+        window.location.href = "{% url 'ver_carrito' %}";
+    });
 });
+
 </script>
 {% endblock scripts %}
