@@ -13,8 +13,44 @@
         </div>
 
         <div class="producto-descripcion">
-            <p>{{ producto.descripcion }}</p>
+            {% if producto.descripcion %}
+                <p>{{ producto.descripcion }}</p>
+            {% endif %}
             <p><strong>Precio: ${{ producto.precio }}</strong></p>
+
+            {% if producto.detalle %}
+            <div class="card shadow-2-strong mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Ficha técnica</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% if producto.detalle.tamaño %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-ruler-combined me-2"></i> Tamaño</span>
+                            <span>{{ producto.detalle.tamaño }}</span>
+                        </li>
+                    {% endif %}
+                    {% if producto.detalle.dimensiones %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-expand-arrows-alt me-2"></i> Dimensiones</span>
+                            <span>{{ producto.detalle.dimensiones }}</span>
+                        </li>
+                    {% endif %}
+                    {% if producto.detalle.descripcion_larga %}
+                        <li class="list-group-item">
+                            <span><i class="fas fa-info-circle me-2"></i> Descripción</span><br>
+                            <small class="text-muted">{{ producto.detalle.descripcion_larga }}</small>
+                        </li>
+                    {% endif %}
+                    {% if producto.detalle.cantidad_por_paquete %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-box-open me-2"></i> Cantidad por paquete</span>
+                            <span>{{ producto.detalle.cantidad_por_paquete }}</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
         </div>
 
         <div class="producto-reviews">

@@ -72,3 +72,22 @@ class PedidoItem(models.Model):
 
     def subtotal(self):
         return self.precio_unitario * self.cantidad
+    
+
+''' Modelo para detalles del producto''' 
+class ProductoDetalle(models.Model):
+    producto = models.OneToOneField(
+        Producto, 
+        on_delete=models.CASCADE, 
+        related_name="detalle"
+    )
+    tamaño = models.CharField(max_length=50, blank=True, null=True)
+    dimensiones = models.CharField(max_length=100, blank=True, null=True)
+    descripcion_larga = models.TextField(blank=True, null=True)
+    cantidad_por_paquete = models.PositiveIntegerField(blank=True, null=True)
+    # Puedes agregar más campos según lo necesites
+    # Ejemplo:
+    # color = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return f"Detalle de {self.producto.nombre}"

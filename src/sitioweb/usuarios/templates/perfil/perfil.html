@@ -98,9 +98,9 @@
                       <div class="d-flex align-items-center mt-1">
                         <label class="me-2 mb-0">Cantidad:</label>
                         <div class="input-group input-group-sm" style="width: 120px;">
-                          <button class="btn btn-outline-secondary" type="button" disabled>-</button>
+                          <button class="btn btn-outline-secondary btn-decrease" type="button" data-id="{{ item.id }}">-</button>
                           <input type="text" class="form-control text-center" value="{{ item.cantidad }}" readonly>
-                          <button class="btn btn-outline-secondary" type="button" disabled>+</button>
+                          <button class="btn btn-outline-secondary btn-increase" type="button" data-id="{{ item.id }}">+</button>
                         </div>
                       </div>
 
