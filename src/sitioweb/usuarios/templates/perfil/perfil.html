@@ -99,7 +99,7 @@
                         <label class="me-2 mb-0">Cantidad:</label>
                         <div class="input-group input-group-sm" style="width: 120px;">
                           <button class="btn btn-outline-secondary btn-decrease" type="button" data-id="{{ item.id }}">-</button>
-                          <input type="text" class="form-control text-center" value="{{ item.cantidad }}" readonly>
+                          <input type="number" class="form-control text-center cantidad-input" value="{{ item.cantidad }}" min="0" data-id="{{ item.id }}" readonly>
                           <button class="btn btn-outline-secondary btn-increase" type="button" data-id="{{ item.id }}">+</button>
                         </div>
                       </div>
@@ -109,13 +109,13 @@
                   </div>
 
                   <span class="badge bg-primary rounded-pill">
-                    Subtotal: ${{ item.subtotal|floatformat:2 }}
+                    Subtotal: $<span class="subtotal" id="subtotal-{{ item.id }}">{{ item.subtotal|floatformat:2 }}</span>
                   </span>
                 </li>
               {% endfor %}
             </ul>
 
-            <h5 class="text-end mb-4">Total: <span class="badge bg-success">${{ total_carrito|floatformat:2 }}</span></h5>
+            <h5 class="text-end mb-4">Total: <span class="badge bg-success">$<span id="total-carrito">{{ total_carrito|floatformat:2 }}</span></span></h5>
 
             <div class="d-flex justify-content-end gap-2">
               <!-- Botón de limpiar carrito -->
@@ -143,42 +143,138 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.js"></script>
 
-<script>
+<script src="https://www.paypal.com/sdk/js?client-id=AREfGsdG4hEaiJ59gtWlf-DQjksWzISXQJ7_jgHYafjT-56tF-3dS8Uz99HXOEm5nqBCabiZxddv70_r&currency=MXN"></script>
 
-document.addEventListener("DOMContentLoaded", function() {
-    const tabList = document.getElementById("list-tab");
-    if (tabList) {
-        setTimeout(() => {
-            tabList.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 100); 
+<script>
+    function getActualizarUrl(id, cantidad) {
+        return "{% url 'actualizar_cantidad' 0 0 %}".replace("0/0", id + "/" + cantidad);
     }
 
-    const btnLimpiar = document.getElementById("btn-limpiar-carrito-perfil");
-    const btnComprar = document.getElementById("btn-comprar-carrito-perfil");
+    document.addEventListener("DOMContentLoaded", function() {
+        // Scroll inicial al perfil
+        const tabList = document.getElementById("list-tab");
+        if (tabList) {
+            setTimeout(() => {
+                tabList.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 100);
+        }
 
-    btnLimpiar?.addEventListener("click", () => {
-        fetch("{% url 'limpiar_carrito' %}", {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
-                "Accept": "application/json",
+        // Botones aumentar
+        const increaseButtons = document.querySelectorAll('.btn-increase');
+        increaseButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const input = document.querySelector(`.cantidad-input[data-id="${id}"]`);
+                let cantidad = parseInt(input.value) + 1;
+
+                fetch(getActualizarUrl(id, cantidad))
+                    .then(response => {
+                        if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                        return response.json();
+                    })
+                    .then(data => {
+                        input.value = cantidad;
+                        document.getElementById(`subtotal-${id}`).textContent = data.subtotal.toFixed(2);
+                        document.getElementById('total-carrito').textContent = data.total.toFixed(2);
+                    })
+                    .catch(error => console.error('Fetch error:', error));
+            });
+        });
+
+        // Botones disminuir
+        const decreaseButtons = document.querySelectorAll('.btn-decrease');
+        decreaseButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const input = document.querySelector(`.cantidad-input[data-id="${id}"]`);
+                let cantidad = parseInt(input.value);
+                if (cantidad > 0) {
+                    cantidad -= 1;
+                    fetch(getActualizarUrl(id, cantidad))
+                        .then(response => {
+                            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                            return response.json();
+                        })
+                        .then(data => {
+                            input.value = cantidad;
+                            document.getElementById(`subtotal-${id}`).textContent = data.subtotal.toFixed(2);
+                            document.getElementById('total-carrito').textContent = data.total.toFixed(2);
+
+                            if (cantidad === 0) {
+                                const productoLi = document.querySelector(`button[data-id="${id}"]`)?.closest("li");
+                                if (productoLi) productoLi.remove();
+                            }
+                        })
+                        .catch(error => console.error('Fetch error:', error));
+                }
+            });
+        });
+
+        // Botón limpiar carrito
+        const btnLimpiar = document.getElementById("btn-limpiar-carrito-perfil");
+        if (btnLimpiar) {
+            btnLimpiar.addEventListener("click", function() {
+                fetch("{% url 'limpiar_carrito' %}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "ok") {
+                        document.getElementById("carrito").innerHTML = "<p>No hay productos en el carrito.</p>";
+                    }
+                })
+                .catch(error => console.error("Error limpiando carrito:", error));
+            });
+        }
+
+        // Botón comprar carrito (redirige al carrito principal)
+        const btnComprar = document.getElementById("btn-comprar-carrito-perfil");
+        btnComprar?.addEventListener("click", () => {
+            window.location.href = "{% url 'ver_carrito' %}";
+        });
+
+        // Renderizar botón PayPal
+        console.log("Renderizando botón PayPal en perfil");
+        paypal.Buttons({
+            style: {
+                layout: 'vertical',
+                color: 'gold',
+                shape: 'rect',
+                label: 'paypal'
             },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === "ok") {
-                location.reload(); // o actualizar UI como prefieras
-            } else {
-                alert("Error limpiando el carrito");
+            createOrder: function(data, actions) {
+                const total = document.getElementById('total-carrito')?.textContent || "0";
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: { value: total }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    fetch("/tienda/pago-completado/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify({
+                            orderID: data.orderID,
+                            details: details
+                        })
+                    }).then(response => response.json()).then(data => {
+                        if (data.status === "ok") {
+                            window.location.href = "/tienda/gracias/";
+                        } else {
+                            alert("Error procesando el pago.");
+                        }
+                    });
+                });
             }
-        })
-        .catch(() => alert("Error en la conexión"));
+        }).render('#btn-comprar-carrito-perfil'); // puedes renderizar en un div propio si prefieres
     });
-
-    btnComprar?.addEventListener("click", () => {
-        window.location.href = "{% url 'ver_carrito' %}";
-    });
-});
-
 </script>
 {% endblock scripts %}

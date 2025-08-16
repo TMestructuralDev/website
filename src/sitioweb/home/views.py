@@ -16,3 +16,7 @@ def home(request):
     }
 
     return render(request, 'home/home.html', context)
+
+
+def contacto(request):
+    return render(request, 'home/contacto.html')

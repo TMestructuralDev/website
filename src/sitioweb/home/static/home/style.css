@@ -173,3 +173,19 @@ body {
 .dropdown-menu {
     z-index: 9999;
 }
+
+
+.text-orange {
+    color: #ff6600 !important;
+}
+
+.btn-orange {
+    background-color: #ff6600 !important;
+    border-color: #ff6600 !important;
+    color: white !important;
+}
+
+.btn-orange:hover {
+    background-color: #e55a00 !important;
+    border-color: #e55a00 !important;
+}
