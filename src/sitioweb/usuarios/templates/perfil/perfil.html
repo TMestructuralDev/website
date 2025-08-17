@@ -1,97 +1,280 @@
 {% extends "home/base.html" %}
-
 {% load static %}
 
 {% block content %}
-
 <div class="container my-5">
-    <div class="row">
-
-        <!-- Menú lateral -->
-        <div class="col-md-3">
-            <div class="list-group">
-                <a href="#datos"
-                    class="list-group-item list-group-item-action active"
-                    data-mdb-toggle="list">Mis Datos</a>
-                <a href="#cambiar-password"
-                    class="list-group-item list-group-item-action"
-                    data-mdb-toggle="list">Cambiar Contraseña</a>
-                <a href="#pedidos"
-                    class="list-group-item list-group-item-action"
-                    data-mdb-toggle="list">Mis Pedidos</a>
-                <a href="#seguimiento"
-                    class="list-group-item list-group-item-action"
-                    data-mdb-toggle="list">Seguimiento</a>
-                <a href="#carrito"
-                    class="list-group-item list-group-item-action"
-                    data-mdb-toggle="list">Carrito de Compras</a>
-            </div>
-        </div>
-
-        <!-- Contenido principal -->
-        <div class="col-md-9">
-            <div class="tab-content">
-
-                <!-- Mis datos -->
-                <div class="tab-pane fade show active" id="datos">
-                    <h3>Mis Datos</h3>
-                    <p>Nombre: {{ user.first_name }}</p>
-                    <p>Apellido: {{ user.last_name }}</p>
-                    <p>Email: {{ user.email }}</p>
-                    <a href="#" class="btn btn-warning">Editar Datos</a>
-                </div>
-
-                <!-- Cambiar contraseña -->
-                <div class="tab-pane fade" id="cambiar-password">
-                    <h3>Cambiar Contraseña</h3>
-                    {# <a href="{% url 'password_change' %}" #}
-                        class="btn btn-primary">Ir a cambiar contraseña</a>
-                </div>
-
-                <!-- Mis pedidos -->
-                <div class="tab-pane fade" id="pedidos">
-                    <h3>Mis Pedidos</h3>
-                    <p>Aquí verás todos tus pedidos.</p>
-                    <!-- Aquí luego mostraremos una tabla de pedidos -->
-                </div>
-
-                <!-- Seguimiento de pedidos -->
-                <div class="tab-pane fade" id="seguimiento">
-                    <h3>Seguimiento</h3>
-                    <p>Consulta el estado de tus pedidos activos.</p>
-                    <!-- Tabla de seguimiento -->
-                </div>
-
-                <!-- Carrito de compras -->
-                <div class="tab-pane fade" id="carrito">
-                    <h3>Carrito</h3>
-                    <p>Tu carrito actual.</p>
-                    <!-- Lista de productos del carrito -->
-                </div>
-
-            </div>
-        </div>
-
+  <div class="row">
+    <!-- Menú lateral -->
+    <div class="col-md-3">
+      <div class="list-group" id="list-tab" role="tablist">
+        <a class="list-group-item list-group-item-action active" id="list-datos-list" data-mdb-toggle="tab" href="#datos" role="tab" aria-controls="datos" aria-selected="true">Mis Datos</a>
+        <a class="list-group-item list-group-item-action" id="list-password-list" data-mdb-toggle="tab" href="#cambiar-password" role="tab" aria-controls="cambiar-password">Cambiar Contraseña</a>
+        <a class="list-group-item list-group-item-action" id="list-pedidos-list" data-mdb-toggle="tab" href="#pedidos" role="tab" aria-controls="pedidos">Mis Pedidos</a>
+        <a class="list-group-item list-group-item-action" id="list-seguimiento-list" data-mdb-toggle="tab" href="#seguimiento" role="tab" aria-controls="seguimiento">Seguimiento</a>
+        <a class="list-group-item list-group-item-action" id="list-carrito-list" data-mdb-toggle="tab" href="#carrito" role="tab" aria-controls="carrito">Carrito de Compras</a>
+      </div>
     </div>
+
+    <!-- Contenido principal -->
+    <div class="col-md-9">
+      <div class="tab-content" id="nav-tabContent">
+        <!-- Mis datos -->
+        <div class="tab-pane fade show active" id="datos" role="tabpanel" aria-labelledby="list-datos-list">
+          <h3>Mis Datos</h3>
+          <p>Nombre: {{ user.first_name }}</p>
+          <p>Apellido: {{ user.last_name }}</p>
+          <p>Email: {{ user.email }}</p>
+          <form method="POST" action="{% url 'editar_datos' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="first_name" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}">
+            </div>
+            <div class="mb-3">
+              <label for="last_name" class="form-label">Apellido</label>
+              <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}">
+            </div>
+            <div class="mb-3">
+              <label for="email" class="form-label">Correo electrónico</label>
+              <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}">
+            </div>
+            <button type="submit" class="btn btn-success">Guardar Cambios</button>
+          </form>
+        </div>
+
+        <!-- Cambiar contraseña -->
+        <div class="tab-pane fade" id="cambiar-password" role="tabpanel" aria-labelledby="list-password-list">
+          <h3>Cambiar Contraseña</h3>
+          
+          <form method="POST" action="">
+            {% csrf_token %}
+            {{ form_password.as_p }}
+            <input type="hidden" name="cambiar_password" value="1">
+            <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
+          </form>
+
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} mt-3">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <!-- Mis pedidos -->
+        <div class="tab-pane fade" id="pedidos" role="tabpanel" aria-labelledby="list-pedidos-list">
+          <h3>Mis Pedidos</h3>
+          {% for pedido in pedidos %}
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5>Pedido #{{ pedido.id }}</h5>
+              <p>Fecha: {{ pedido.fecha }}</p>
+            </div>
+          </div>
+          {% empty %}
+          <p>No tienes pedidos.</p>
+          {% endfor %}
+        </div>
+
+        <!-- Seguimiento -->
+        <div class="tab-pane fade" id="seguimiento" role="tabpanel" aria-labelledby="list-seguimiento-list">
+          <h3>Seguimiento</h3>
+          <p>Consulta el estado de tus pedidos activos.</p>
+        </div>
+
+        <!-- Carrito -->
+        <div class="tab-pane fade" id="carrito" role="tabpanel" aria-labelledby="list-carrito-list">
+          <h3>Carrito de Compras</h3>
+
+          {% if carrito_items %}
+            <ul class="list-group mb-3">
+              {% for item in carrito_items %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center">
+                    <img src="{{ item.imagen }}" alt="{{ item.nombre }}" style="width: 50px; height: 50px; object-fit: cover; margin-right: 10px;">
+                    <div>
+                      <strong>{{ item.nombre }}</strong><br>
+
+                      <!-- Cantidad con botones -->
+                      <div class="d-flex align-items-center mt-1">
+                        <label class="me-2 mb-0">Cantidad:</label>
+                        <div class="input-group input-group-sm" style="width: 120px;">
+                          <button class="btn btn-outline-secondary btn-decrease" type="button" data-id="{{ item.id }}">-</button>
+                          <input type="number" class="form-control text-center cantidad-input" value="{{ item.cantidad }}" min="0" data-id="{{ item.id }}" readonly>
+                          <button class="btn btn-outline-secondary btn-increase" type="button" data-id="{{ item.id }}">+</button>
+                        </div>
+                      </div>
+
+                      <div class="mt-1">Precio unitario: ${{ item.precio }}</div>
+                    </div>
+                  </div>
+
+                  <span class="badge bg-primary rounded-pill">
+                    Subtotal: $<span class="subtotal" id="subtotal-{{ item.id }}">{{ item.subtotal|floatformat:2 }}</span>
+                  </span>
+                </li>
+              {% endfor %}
+            </ul>
+
+            <h5 class="text-end mb-4">Total: <span class="badge bg-success">$<span id="total-carrito">{{ total_carrito|floatformat:2 }}</span></span></h5>
+
+            <div class="d-flex justify-content-end gap-2">
+              <!-- Botón de limpiar carrito -->
+              <button id="btn-limpiar-carrito-perfil" class="btn btn-outline-danger" type="button">
+                <i class="fas fa-trash-alt me-2"></i> Limpiar carrito
+              </button>
+
+              <!-- Botón de comprar -->
+              <button id="btn-comprar-carrito-perfil" class="btn btn-success" type="button">
+                <i class="fas fa-shopping-cart me-2"></i> Comprar carrito
+              </button>
+            </div>
+
+          {% else %}
+            <p>No tienes productos en el carrito.</p>
+          {% endif %}
+        </div>
+    </div>
+  </div>
 </div>
-
 {% endblock %}
-
 
 {% block scripts %}
 {{ block.super }}
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.js"></script>
+
+<script src="https://www.paypal.com/sdk/js?client-id=AREfGsdG4hEaiJ59gtWlf-DQjksWzISXQJ7_jgHYafjT-56tF-3dS8Uz99HXOEm5nqBCabiZxddv70_r&currency=MXN"></script>
+
 <script>
-    // Necesario para el efecto de tabs si no usas inicialización automática
-    document.addEventListener('DOMContentLoaded', function() {
-        const listGroup = document.querySelectorAll('.list-group-item');
-        listGroup.forEach(item => {
-            item.addEventListener('click', function() {
-                listGroup.forEach(i => i.classList.remove('active'));
-                this.classList.add('active');
+    function getActualizarUrl(id, cantidad) {
+        return "{% url 'actualizar_cantidad' 0 0 %}".replace("0/0", id + "/" + cantidad);
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Scroll inicial al perfil
+        const tabList = document.getElementById("list-tab");
+        if (tabList) {
+            setTimeout(() => {
+                tabList.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 100);
+        }
+
+        // Botones aumentar
+        const increaseButtons = document.querySelectorAll('.btn-increase');
+        increaseButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const input = document.querySelector(`.cantidad-input[data-id="${id}"]`);
+                let cantidad = parseInt(input.value) + 1;
+
+                fetch(getActualizarUrl(id, cantidad))
+                    .then(response => {
+                        if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                        return response.json();
+                    })
+                    .then(data => {
+                        input.value = cantidad;
+                        document.getElementById(`subtotal-${id}`).textContent = data.subtotal.toFixed(2);
+                        document.getElementById('total-carrito').textContent = data.total.toFixed(2);
+                    })
+                    .catch(error => console.error('Fetch error:', error));
             });
         });
+
+        // Botones disminuir
+        const decreaseButtons = document.querySelectorAll('.btn-decrease');
+        decreaseButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const input = document.querySelector(`.cantidad-input[data-id="${id}"]`);
+                let cantidad = parseInt(input.value);
+                if (cantidad > 0) {
+                    cantidad -= 1;
+                    fetch(getActualizarUrl(id, cantidad))
+                        .then(response => {
+                            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                            return response.json();
+                        })
+                        .then(data => {
+                            input.value = cantidad;
+                            document.getElementById(`subtotal-${id}`).textContent = data.subtotal.toFixed(2);
+                            document.getElementById('total-carrito').textContent = data.total.toFixed(2);
+
+                            if (cantidad === 0) {
+                                const productoLi = document.querySelector(`button[data-id="${id}"]`)?.closest("li");
+                                if (productoLi) productoLi.remove();
+                            }
+                        })
+                        .catch(error => console.error('Fetch error:', error));
+                }
+            });
+        });
+
+        // Botón limpiar carrito
+        const btnLimpiar = document.getElementById("btn-limpiar-carrito-perfil");
+        if (btnLimpiar) {
+            btnLimpiar.addEventListener("click", function() {
+                fetch("{% url 'limpiar_carrito' %}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "ok") {
+                        document.getElementById("carrito").innerHTML = "<p>No hay productos en el carrito.</p>";
+                    }
+                })
+                .catch(error => console.error("Error limpiando carrito:", error));
+            });
+        }
+
+        // Botón comprar carrito (redirige al carrito principal)
+        const btnComprar = document.getElementById("btn-comprar-carrito-perfil");
+        btnComprar?.addEventListener("click", () => {
+            window.location.href = "{% url 'ver_carrito' %}";
+        });
+
+        // Renderizar botón PayPal
+        console.log("Renderizando botón PayPal en perfil");
+        paypal.Buttons({
+            style: {
+                layout: 'vertical',
+                color: 'gold',
+                shape: 'rect',
+                label: 'paypal'
+            },
+            createOrder: function(data, actions) {
+                const total = document.getElementById('total-carrito')?.textContent || "0";
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: { value: total }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    fetch("/tienda/pago-completado/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify({
+                            orderID: data.orderID,
+                            details: details
+                        })
+                    }).then(response => response.json()).then(data => {
+                        if (data.status === "ok") {
+                            window.location.href = "/tienda/gracias/";
+                        } else {
+                            alert("Error procesando el pago.");
+                        }
+                    });
+                });
+            }
+        }).render('#btn-comprar-carrito-perfil'); // puedes renderizar en un div propio si prefieres
     });
 </script>
-
 {% endblock scripts %}

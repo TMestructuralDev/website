@@ -1,5 +1,3 @@
-
-
 class Carrito:
     def __init__(self, request):
         self.session = request.session
@@ -20,6 +18,10 @@ class Carrito:
                 'id': producto.id,
             }
             self.guardar()
+        else:
+            # Si ya existe, aumentamos la cantidad
+            self.carrito[id]['cantidad'] += 1
+            self.guardar()
 
     def eliminar(self, producto):
         id = str(producto.id)
@@ -38,12 +40,14 @@ class Carrito:
     def __iter__(self):
         for item in self.carrito.values():
             item_copy = item.copy()
-            item_copy['subtotal'] = float(item_copy['precio']) * item_copy['cantidad']
+            item_copy['precio'] = float(item_copy['precio'])
+            item_copy['subtotal'] = item_copy['precio'] * item_copy['cantidad']
             yield item_copy
 
+    @property
     def total(self):
         return sum(float(item['precio']) * item['cantidad'] for item in self.carrito.values())
-    
+
     def aumentar(self, producto):
         id = str(producto.id)
         if id in self.carrito:
