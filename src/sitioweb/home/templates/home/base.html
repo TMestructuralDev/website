@@ -12,7 +12,7 @@
         {% block styles %}
         <link href="{% static 'mdb/css/mdb.min.css' %}" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-        <link href="{% static 'home/style.css' %}" rel="stylesheet">
+        <link href="{% static 'style.css' %}" rel="stylesheet">
         {% endblock styles %}
     </head>
 
@@ -30,7 +30,7 @@
                         <a
                             class="navbar-brand me-2 mb-1 d-flex justify-content-center"
                             href="#">
-                            <img src="{% static 'home/images/logo.png' %}" 
+                            <img src="{% static 'images/logo.png' %}" 
                                 height="20" loading="lazy" />
                         </a>
 
@@ -81,7 +81,7 @@
 
                         <!-- Contact -->
                         <li class="nav-item me-3 me-lg-0">
-                            <a class="nav-link" href="#">
+                            <a class="nav-link" href="{% url 'contacto' %}#contacto">
                                 <span
                                     class="d-none d-lg-inline-block">Contacto</span>
                                 <i
@@ -129,7 +129,7 @@
             <!-- Video de fondo del header -->
             <div id="intro" class="video-background-container">
                 <video autoplay muted loop preload="none" class="video-background">
-                    <source src="{% static 'home/videos/backgroundvideo.mp4' %}" type="video/mp4">
+                    <source src="{% static 'videos/backgroundvideo.mp4' %}" type="video/mp4">
                     Tu navegador no soporta el video HTML5.
                 </video>
 
@@ -202,8 +202,8 @@
                         <h5 class="text-uppercase mb-4">Acerca de Nosotros</h5>
 
                         <p>
-                            Somos una compañia enfocada en buscar solucione
-                            spara nuestros clientes.
+                            Somos una compañia enfocada en buscar soluciones 
+                            para nuestros clientes.
                         </p>
 
                         <p>
@@ -254,19 +254,19 @@
                             <li class="mb-3">
                                 <span class="fa-li"><i
                                         class="fas fa-home"></i></span><span
-                                    class="ms-2">Mazatlan, Sinaloa,
-                                    Mexico</span>
+                                    class="ms-2">Ciudad, Estado,
+                                    Pais</span>
                             </li>
                             <li class="mb-3">
                                 <span class="fa-li"><i
                                         class="fas fa-envelope"></i></span><span
-                                    class="ms-2">contact@example.com</span>
+                                    class="ms-2">test@gmail.com</span>
                             </li>
                             <li class="mb-3">
                                 <span class="fa-li"><i
                                         class="fas fa-phone"></i></span><span
-                                    class="ms-2">+ 52 669 4452
-                                    803</span>
+                                    class="ms-2">+ 52 012 3456
+                                    789</span>
                             </li>
                         </ul>
                     </div>
