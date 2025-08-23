@@ -64,7 +64,9 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 
-<script src="https://www.paypal.com/sdk/js?client-id=AREfGsdG4hEaiJ59gtWlf-DQjksWzISXQJ7_jgHYafjT-56tF-3dS8Uz99HXOEm5nqBCabiZxddv70_r&currency=MXN"></script>
+<!-- Justo antes del script de PayPal -->
+
+<script src="https://www.paypal.com/sdk/js?client-id={{ PAYPAL_CLIENT_ID }}&currency=MXN"></script>
 
 <script>
     function getActualizarUrl(id, cantidad) {
@@ -162,6 +164,9 @@ document.addEventListener("DOMContentLoaded", function() {
             },
             onApprove: function(data, actions) {
                 return actions.order.capture().then(function(details) {
+                    console.log("Pago capturado:", details);
+                    console.log("Order ID:", data.orderID);
+                    
                     fetch("/tienda/pago-completado/", {
                         method: "POST",
                         headers: {
@@ -169,15 +174,28 @@ document.addEventListener("DOMContentLoaded", function() {
                             "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
                         },
                         body: JSON.stringify({
-                            orderID: data.orderID,
-                            details: details
+                            orderID: data.orderID
+                            // Removemos details para evitar problemas
                         })
-                    }).then(response => response.json()).then(data => {
+                    })
+                    .then(response => {
+                        console.log("Response status:", response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log("Response data:", data);
                         if (data.status === "ok") {
                             window.location.href = "/tienda/gracias/";
                         } else {
-                            alert("Error procesando el pago.");
+                            alert("Error procesando el pago: " + (data.message || "Error desconocido"));
                         }
+                    })
+                    .catch(error => {
+                        console.error("Error en el pago:", error);
+                        alert("Error procesando el pago. Por favor intenta nuevamente.");
                     });
                 });
             }
