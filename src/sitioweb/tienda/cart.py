@@ -11,7 +11,7 @@ class Carrito:
         if id not in self.carrito:
             self.carrito[id] = {
                 'nombre': producto.nombre,
-                'precio': str(producto.precio),
+                'precio': float(producto.precio),  # ← Cambiar a float
                 'cantidad': 1,
                 'imagen': producto.imagen.url,
                 'slug': producto.slug,
@@ -40,13 +40,18 @@ class Carrito:
     def __iter__(self):
         for item in self.carrito.values():
             item_copy = item.copy()
-            item_copy['precio'] = float(item_copy['precio'])
+            # Asegurar que precio sea float
+            item_copy['precio'] = float(item_copy['precio']) if isinstance(item_copy['precio'], str) else item_copy['precio']
             item_copy['subtotal'] = item_copy['precio'] * item_copy['cantidad']
             yield item_copy
 
     @property
     def total(self):
-        return sum(float(item['precio']) * item['cantidad'] for item in self.carrito.values())
+        total = 0
+        for item in self.carrito.values():
+            precio = float(item['precio']) if isinstance(item['precio'], str) else item['precio']
+            total += precio * item['cantidad']
+        return round(total, 2)
 
     def aumentar(self, producto):
         id = str(producto.id)
@@ -62,3 +67,7 @@ class Carrito:
                 self.eliminar(producto)
             else:
                 self.guardar()
+
+    def get_item_precio_float(self, item):
+        """Método helper para obtener precio como float"""
+        return float(item['precio']) if isinstance(item['precio'], str) else item['precio']

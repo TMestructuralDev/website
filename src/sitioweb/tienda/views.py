@@ -1,14 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-import json
 from django.views.decorators.http import require_POST
-from .models import Producto, Categoria
+from django.urls import reverse
+from django.conf import settings
+import json
+import requests
+
+from .models import Producto, Categoria, Pedido, PedidoItem
 from home.utils import obtener_productos_destacados
 from .cart import Carrito
-from django.urls import reverse
-from .models import Pedido, PedidoItem
-#from tienda.models import Producto
 
 
 # Create your views here.
@@ -64,12 +65,11 @@ def eliminar_del_carrito(request, producto_id):
 
 def ver_carrito(request):
     carrito = Carrito(request)
-    # carrito es iterable y cada item tiene subtotal calculado
-    # total es la propiedad carrito.total
-
+    
     context = {
         'carrito': carrito,
         'total_carrito': carrito.total,
+        'PAYPAL_CLIENT_ID': settings.PAYPAL_CLIENT_ID, 
     }
     return render(request, 'tienda/carrito.html', context)
 
@@ -119,54 +119,200 @@ def actualizar_cantidad(request, producto_id, cantidad):
         "total": round(total, 2),
     })
 
+def get_paypal_access_token():
+    """Obtiene token de acceso de PayPal usando client_id y secret del sandbox."""
+    try:
+        # Verificar que las credenciales estén configuradas
+        if not settings.PAYPAL_CLIENT_ID or not settings.PAYPAL_SECRET:
+            print("Error: Credenciales de PayPal no configuradas")
+            return None
+            
+        resp = requests.post(
+            f"{settings.PAYPAL_API_URL}/v1/oauth2/token",
+            data={"grant_type": "client_credentials"},
+            auth=(settings.PAYPAL_CLIENT_ID, settings.PAYPAL_SECRET),
+            headers={'Accept': 'application/json', 'Accept-Language': 'en_US'},
+            timeout=30  # Timeout para evitar colgarse
+        )
+        resp.raise_for_status()
+        
+        token_data = resp.json()
+        token = token_data.get("access_token")
+        
+        if not token:
+            print("Error: No se recibió access_token en la respuesta de PayPal")
+            return None
+            
+        print("Access Token PayPal obtenido exitosamente")
+        return token
+        
+    except requests.exceptions.Timeout:
+        print("Error: Timeout conectando con PayPal")
+        return None
+    except requests.exceptions.ConnectionError:
+        print("Error: No se pudo conectar con PayPal")
+        return None
+    except requests.exceptions.HTTPError as e:
+        print(f"Error HTTP de PayPal: {e}")
+        print(f"Respuesta: {e.response.text if e.response else 'No response'}")
+        return None
+    except requests.RequestException as e:
+        print(f"Error obteniendo token PayPal: {e}")
+        return None
+    except Exception as e:
+        print(f"Error inesperado obteniendo token PayPal: {e}")
+        return None
+    
 @csrf_exempt
 def pago_completado(request):
-    if request.method == "POST":
-        print("Se recibió POST en pago_completado")
-        data = json.loads(request.body)
-        order_id = data.get("orderID")
-        details = data.get("details")
+    """Confirma pago desde PayPal y crea Pedido y PedidoItems."""
+    try:
+        print("=== DEBUG: Iniciando pago_completado ===")
+        
+        if request.method != "POST":
+            print("ERROR: Método no es POST")
+            return JsonResponse({"status": "error", "message": "Método no permitido"}, status=405)
 
-        nombre_cliente = details.get("payer", {}).get("name", {}).get("given_name", "") + " " + details.get("payer", {}).get("name", {}).get("surname", "")
-        email = details.get("payer", {}).get("email_address", "")
-        total = details.get("purchase_units", [{}])[0].get("amount", {}).get("value", 0)
+        if not request.user.is_authenticated:
+            print("ERROR: Usuario no autenticado")
+            return JsonResponse({"status": "error", "message": "Usuario no autenticado"}, status=403)
+        
+        print(f"DEBUG: Usuario autenticado: {request.user.username}")
 
-        carrito = request.session.get('carrito', {})
+        # Parsear body
+        try:
+            print(f"DEBUG: Request body: {request.body}")
+            data = json.loads(request.body)
+            order_id = data.get("orderID")
+            print(f"DEBUG: Order ID recibido: {order_id}")
+            if not order_id:
+                return JsonResponse({"status": "error", "message": "Falta orderID"}, status=400)
+        except json.JSONDecodeError as e:
+            print(f"ERROR: JSON inválido: {e}")
+            return JsonResponse({"status": "error", "message": "JSON inválido"}, status=400)
 
-        if not carrito:
+        # Obtener token PayPal con mejor manejo de errores
+        print("DEBUG: Obteniendo token de PayPal...")
+        access_token = get_paypal_access_token()
+        if not access_token:
+            print("ERROR: No se pudo obtener token de PayPal")
+            return JsonResponse({"status": "error", "message": "No se pudo obtener token de PayPal"}, status=500)
+        
+        print("DEBUG: Token obtenido exitosamente")
+
+        # Validar pago con PayPal
+        try:
+            print(f"DEBUG: Consultando orden PayPal: {order_id}")
+            print(f"DEBUG: URL: {settings.PAYPAL_API_URL}/v2/checkout/orders/{order_id}")
+            
+            resp = requests.get(
+                f"{settings.PAYPAL_API_URL}/v2/checkout/orders/{order_id}",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+            print(f"DEBUG: Status code PayPal: {resp.status_code}")
+            print(f"DEBUG: Response PayPal: {resp.text[:500]}...")  # Primeros 500 chars
+            
+            resp.raise_for_status()
+            order_data = resp.json()
+            print(f"DEBUG: Orden status: {order_data.get('status')}")
+            
+        except requests.RequestException as e:
+            print(f"ERROR: Exception consultando PayPal: {str(e)}")
+            return JsonResponse({"status": "error", "message": f"Error consultando PayPal: {str(e)}"}, status=500)
+
+        if order_data.get("status") != "COMPLETED":
+            print(f"ERROR: Pago no completado. Status: {order_data.get('status')}")
+            return JsonResponse({"status": "error", "message": "Pago no confirmado"}, status=400)
+
+        print("DEBUG: Pago confirmado, procesando datos...")
+
+        # Datos del pagador con validación
+        payer = order_data.get("payer", {})
+        nombre_completo = payer.get("name", {})
+        nombre_cliente = (nombre_completo.get("given_name", "") + " " + nombre_completo.get("surname", "")).strip()
+        email = payer.get("email_address", "")
+        
+        print(f"DEBUG: Payer data: {payer}")
+        print(f"DEBUG: Nombre cliente: {nombre_cliente}")
+        print(f"DEBUG: Email: {email}")
+        
+        # Si no hay nombre, usar el username del usuario autenticado
+        if not nombre_cliente:
+            nombre_cliente = request.user.get_full_name() or request.user.username
+            print(f"DEBUG: Usando nombre de usuario: {nombre_cliente}")
+
+        # Usar la clase Carrito consistentemente
+        carrito = Carrito(request)
+        print(f"DEBUG: Carrito items: {len(carrito.carrito)}")
+        
+        if not carrito.carrito:
+            print("ERROR: Carrito vacío")
             return JsonResponse({"status": "error", "message": "Carrito vacío"}, status=400)
 
-        # Crear pedido
+        # Usar la propiedad total que ya maneja la conversión correctamente
+        total = carrito.total
+        print(f"DEBUG: Total calculado: {total}")
+
+        print("DEBUG: Creando pedido en base de datos...")
+
+        # Crear Pedido
         pedido = Pedido.objects.create(
+            usuario=request.user,
             nombre_cliente=nombre_cliente,
             email=email,
             total=total,
             order_id_paypal=order_id
         )
+        print(f"DEBUG: Pedido creado con ID: {pedido.id}")
 
-        # Crear items
-        for item in carrito.values():
-            producto_id = item.get("id")
+        # Crear items del pedido
+        items_creados = 0
+        for producto_id, item in carrito.carrito.items():
             try:
-                producto = Producto.objects.get(id=producto_id)
+                producto = Producto.objects.get(id=item["id"])
                 PedidoItem.objects.create(
                     pedido=pedido,
                     producto=producto,
-                    cantidad=item.get("cantidad"),
-                    precio_unitario=item.get("precio")
+                    cantidad=item["cantidad"],
+                    precio_unitario=float(item["precio"])  # Convertir string a float
                 )
+                items_creados += 1
+                print(f"DEBUG: Item creado para producto {producto.nombre}")
             except Producto.DoesNotExist:
+                # Log del producto no encontrado pero continúa
+                print(f"ERROR: Producto con ID {item['id']} no encontrado")
+                continue
+            except ValueError as e:
+                # Error de conversión de precio
+                print(f"ERROR: Error convirtiendo precio del producto {item['id']}: {e}")
                 continue
 
-        # Limpiar carrito
-        request.session['carrito'] = {}
+        print(f"DEBUG: Total items creados: {items_creados}")
 
-        return JsonResponse({"status": "ok"})
-    return JsonResponse({"status": "error"}, status=400)
+        # Limpiar carrito usando el método de la clase
+        carrito.limpiar()
+        print("DEBUG: Carrito limpiado")
 
+        print("DEBUG: Proceso completado exitosamente")
+
+        return JsonResponse({
+            "status": "ok",
+            "pedido_id": pedido.id,
+            "message": "Pedido creado exitosamente"
+        })
+
+    except Exception as e:
+        # Log del error completo para debugging
+        import traceback
+        error_traceback = traceback.format_exc()
+        print(f"=== ERROR COMPLETO ===")
+        print(error_traceback)
+        print(f"=== FIN ERROR ===")
+        return JsonResponse({"status": "error", "message": f"Error interno: {str(e)}"}, status=500)
+
+'''Vista del template gracias al confirmar compra'''
 def gracias(request):
     return render(request, "tienda/gracias.html")
-
 
 
 '''Motor de busqueda'''
